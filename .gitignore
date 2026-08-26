@@ -1,0 +1,63 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# ===== Virtual envs =====
+venv/
+.venv/
+env/
+ENV/
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ===== Environment & secrets =====
+.env
+.env.local
+.env.*.local
+*.pem
+credentials/
+
+# ===== Project data (don't commit corpora or indexes) =====
+data/raw/
+data/chroma/
+data/processed/
+data/bm25_index_*.pkl
+data/eval/results.json
+data/eval/light_results.json
+data/query_payload.json
+data/install.log
+
+# ===== Temp / scratch scripts (kept locally, not in repo) =====
+scripts/_*.py
+_*.log
+*.log
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== OS =====
+Thumbs.db
+desktop.ini

@@ -1,0 +1,43 @@
+# ===== Core =====
+python-dotenv>=1.0.0
+pydantic>=2.5.0,<3
+pydantic-settings>=2.1.0
+
+# ===== Web framework =====
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+streamlit>=1.31.0
+requests>=2.31.0
+
+# ===== LLM =====
+google-generativeai>=0.3.2
+
+# ===== Embeddings & re-ranking =====
+sentence-transformers>=2.2.2
+
+# ===== Vector store =====
+chromadb>=0.4.22
+# Optional: Databricks Vector Search / AI Search backend (production deploy)
+# The adapter uses ``databricks-ai-search.AISearchClient`` which is the new
+# official client. ``databricks-vectorsearch`` is kept at <0.75 only for
+# backwards-compat re-exports and is not actually imported by our code; the
+# pin prevents the resolver from pulling in a stale 0.75+ that lacks the
+# legacy REST client.
+databricks-vectorsearch<0.75
+databricks-ai-search>=0.78
+databricks-sdk
+
+# ===== BM25 =====
+rank-bm25>=0.2.2
+
+# ===== Document loading =====
+pypdf>=4.0.0
+beautifulsoup4>=4.12.3
+tqdm>=4.66.1
+
+# ===== Text processing =====
+tiktoken>=0.5.2
+
+# ===== Evaluation =====
+ragas>=0.1.5
+datasets>=2.16.1
