@@ -10,7 +10,6 @@ from __future__ import annotations
 import hashlib
 import re
 from dataclasses import dataclass, field
-from typing import Optional
 
 import tiktoken
 
@@ -51,8 +50,8 @@ class Chunker:
         self,
         text: str,
         source: str,
-        section: Optional[str] = None,
-        extra_metadata: Optional[dict] = None,
+        section: str | None = None,
+        extra_metadata: dict | None = None,
     ) -> list[Chunk]:
         """Split text into chunks using a sliding window.
 
@@ -142,12 +141,12 @@ class Chunker:
         self,
         text: str,
         source: str,
-        section: Optional[str],
+        section: str | None,
         idx: int,
         total: int,
         start_token: int,
         end_token: int,
-        extra: Optional[dict],
+        extra: dict | None,
     ) -> Chunk:
         return Chunk(
             text=text,

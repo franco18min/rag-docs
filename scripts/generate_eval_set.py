@@ -19,13 +19,11 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import random
 import sys
 from pathlib import Path
 
 from app.config import settings
 from app.core.pipeline import RAGPipeline
-
 
 logger = logging.getLogger("generate_eval_set")
 
@@ -87,8 +85,8 @@ def generate_from_collection(
 
     # Get a sample of chunks via random offsets
     sample_size = min(num_questions * 2, total)
-    rng = random.Random(42)
-    offsets = rng.sample(range(total), k=sample_size)
+    # Note: sample_size is reserved for future stratified sampling.
+    _ = sample_size
 
     qa_pairs: list[dict] = []
     seen_questions: set[str] = set()
@@ -149,7 +147,7 @@ def from_template(template_path: Path, output_path: Path) -> int:
     if not template_path.exists():
         print(f"❌ Template no encontrado: {template_path}")
         sys.exit(1)
-    with open(template_path, "r", encoding="utf-8") as f:
+    with open(template_path, encoding="utf-8") as f:
         qa = json.load(f)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:

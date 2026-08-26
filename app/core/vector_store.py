@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
-from typing import Optional
 
 import chromadb
 from chromadb.config import Settings as ChromaSettings
@@ -20,7 +19,7 @@ from app.config import settings
 class VectorStore:
     """Thin wrapper around Chroma for add/query/list operations."""
 
-    def __init__(self, persist_dir: Optional[str] = None):
+    def __init__(self, persist_dir: str | None = None):
         self.persist_dir = Path(persist_dir or settings.chroma_persist_dir).resolve()
         self.persist_dir.mkdir(parents=True, exist_ok=True)
 
@@ -87,7 +86,7 @@ class VectorStore:
         collection: str,
         query_embedding: list[float],
         top_k: int = 20,
-        where: Optional[dict] = None,
+        where: dict | None = None,
     ) -> list[dict]:
         """Return top-k most similar chunks.
 

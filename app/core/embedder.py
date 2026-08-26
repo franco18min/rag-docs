@@ -8,7 +8,6 @@ the use case of technical documentation in Spanish/English.
 from __future__ import annotations
 
 import os
-from typing import Optional
 
 # Silence noisy HuggingFace progress bars and telemetry
 os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
@@ -23,14 +22,14 @@ from app.config import settings
 class Embedder:
     """Lazy-loaded singleton wrapper around sentence-transformers."""
 
-    _instance: Optional["Embedder"] = None
+    _instance: Embedder | None = None
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, model_name: Optional[str] = None):
+    def __init__(self, model_name: str | None = None):
         if getattr(self, "_initialized", False):
             return
         self.model_name = model_name or settings.embedding_model

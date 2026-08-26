@@ -7,13 +7,9 @@ claim in the provided context.
 """
 from __future__ import annotations
 
-import os
-from typing import Optional
-
 import google.generativeai as genai
 
 from app.config import settings
-
 
 SYSTEM_INSTRUCTION = """Sos un asistente técnico que responde preguntas sobre documentación técnica.
 Reglas estrictas:
@@ -37,7 +33,7 @@ Respondé la pregunta usando EXCLUSIVAMENTE el contexto de arriba. Citá los chu
 class Generator:
     """Google Gemini wrapper with structured prompting for grounded answers."""
 
-    def __init__(self, model_name: Optional[str] = None, api_key: Optional[str] = None):
+    def __init__(self, model_name: str | None = None, api_key: str | None = None):
         self.model_name = model_name or settings.gemini_model
         self.api_key = api_key or settings.google_api_key
         if not self.api_key:
@@ -98,7 +94,7 @@ class Generator:
     def _format_context(chunks: list[dict]) -> str:
         """Format chunks as numbered context blocks."""
         parts: list[str] = []
-        for i, c in enumerate(chunks, start=1):
+        for _i, c in enumerate(chunks, start=1):
             md = c.get("metadata", {}) or {}
             source = md.get("source", "unknown")
             section = md.get("section") or ""

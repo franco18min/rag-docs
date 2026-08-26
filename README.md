@@ -7,6 +7,9 @@
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 ![Stack](https://img.shields.io/badge/stack-100%25%20gratis-success)
 ![Deploy](https://img.shields.io/badge/Databricks%20Free%20Edition-validated-blue)
+![CI](https://github.com/your-username/rag-docs/actions/workflows/ci.yml/badge.svg)
+
+![Streamlit demo: query "¿Qué garantías ACID ofrece Delta Lake?" with full citation-backed response](docs/img/streamlit-demo.jpg)
 
 ---
 
@@ -15,22 +18,24 @@
 Este es el **Proyecto 1** del roadmap de transición de Data Engineer a AI Engineer. Demuestra:
 
 - ✅ Diseño de pipelines de ingestión (transferible desde data engineering)
-- ✅ Búsqueda híbrida (BM25 + vector denso) con re-ranking
-- ✅ Evaluación sistemática (faithfulness, context recall, answer relevancy)
-- ✅ Observability end-to-end (interface lista para Langfuse)
-- ✅ Deploy production-grade con FastAPI + Docker
+- ✅ **Búsqueda híbrida** (BM25 + vector denso) con RRF y re-ranking cross-encoder
+- ✅ **Ablation study** que justifica cada decisión arquitectónica
+- ✅ **Evaluación sistemática** (20 Q&A con ground truth, RAGAS-style)
+- ✅ **5 ADRs** documentando decisiones técnicas
+- ✅ **CI** con GitHub Actions (lint + mypy + tests)
 - ✅ **Backend vendor-agnostic**: Chroma (local) ↔ Databricks Vector Search (prod)
-- ✅ **Deploy validado en Databricks Free Edition** (smoke test + retrieval eval 5/5)
+- ✅ **Deploy validado end-to-end** en Databricks Free Edition
 - ✅ **Costo de inferencia: USD 0** (Gemini Flash-Lite free tier)
 
 **Talking point para entrevistas:**
-> *"Construí un sistema RAG sobre documentación técnica con búsqueda híbrida, re-ranking cross-encoder, y evaluación sistemática sobre un set de Q&A con ground truth. La pipeline corre 100% en free tiers (Gemini Flash-Lite, BGE-M3 local, Chroma dev / Databricks Vector Search prod). El deploy en Databricks Free Edition está validado end-to-end con smoke test, retrieval eval 5/5, y un RAGAS-style eval que muestra faithfulness 0.87 y answer_relevancy 1.0."*
+> *"Construí un sistema RAG sobre documentación técnica con búsqueda híbrida, re-ranking cross-encoder, y evaluación sistemática sobre 20 Q&A con ground truth. La pipeline corre 100% en free tiers (Gemini Flash-Lite, BGE-M3 local, Chroma dev / Databricks Vector Search prod). El deploy en Databricks Free Edition está validado end-to-end. La ablation muestra que el re-ranker cross-encoder **empeoró** Hit@1 en mi corpus de 18 chunks (0.85 vs 0.90) — descubrí que para corpus chicos, hybrid sin rerank es el sweet spot, y documenté el por qué en el ADR-003."*
 
-Para más detalles sobre arquitectura, evaluación y talking points de entrevista, ver:
+Para más detalles sobre arquitectura, evaluación, talking points de entrevista, decisiones técnicas y deploy, ver:
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — decisiones técnicas y trade-offs
 - [`docs/EVALUATION.md`](docs/EVALUATION.md) — cómo interpretar las métricas
 - [`docs/INTERVIEW_TALKING_POINTS.md`](docs/INTERVIEW_TALKING_POINTS.md) — cómo presentar el proyecto
 - [`docs/DEPLOY_DATABRICKS.md`](docs/DEPLOY_DATABRICKS.md) — setup Free Edition, gotchas y cleanup
+- [`docs/adr/`](docs/adr/README.md) — 5 Architecture Decision Records
 
 ---
 
@@ -185,11 +190,14 @@ pytest tests/ -v
 rag-docs/
 ├── README.md                      # Este archivo
 ├── requirements.txt               # Dependencias
+├── pyproject.toml                 # ruff + mypy + pytest config
 ├── .env.example                   # Template de variables de entorno
 ├── .gitignore
 ├── LICENSE                        # MIT
 ├── Dockerfile                     # Para deploy
 ├── docker-compose.yml             # API + Streamlit
+├── .github/
+│   └── workflows/ci.yml           # GitHub Actions: lint + mypy + tests
 │
 ├── app/                           # Aplicación principal
 │   ├── __init__.py
@@ -201,10 +209,12 @@ rag-docs/
 │   │   ├── chunker.py             # Sliding window con tiktoken + metadata
 │   │   ├── embedder.py            # BGE-M3 wrapper (singleton)
 │   │   ├── vector_store.py        # Chroma wrapper
+│   │   ├── vector_store_databricks.py  # Databricks Vector Search adapter
 │   │   ├── bm25_store.py          # rank-bm25 wrapper (persistido)
 │   │   ├── hybrid_search.py       # Búsqueda híbrida con RRF
 │   │   ├── reranker.py            # Cross-encoder re-ranking
 │   │   ├── generator.py           # Gemini wrapper con prompt estructurado
+│   │   ├── store_factory.py       # Vendor-agnostic store selector
 │   │   └── pipeline.py            # Orquestación end-to-end
 │   │
 │   ├── models/                    # Schemas Pydantic
@@ -217,25 +227,40 @@ rag-docs/
 ├── scripts/                       # Scripts CLI
 │   ├── ingest.py                  # Ingesta de documentos (PDF/MD/HTML/TXT)
 │   ├── generate_eval_set.py       # Generar Q&A set con Gemini o desde template
-│   └── evaluate.py                # RAGAS evaluation runner
+│   ├── evaluate.py                # Full RAGAS runner (requiere fix langchain)
+│   ├── evaluate_light.py          # Lightweight RAGAS-style eval (1 LLM call/Q)
+│   ├── ablation.py                # vector vs hybrid vs hybrid+rerank
+│   ├── smoke_test_databricks.py   # End-to-end test contra Databricks
+│   └── cleanup_databricks.py      # Drop endpoint + table + catalog
 │
 ├── data/                          # Data local (no commitear — ver .gitignore)
 │   ├── raw/                       # PDFs/MDs originales
 │   ├── chroma/                    # Vector DB local
 │   ├── processed/                 # (reservado)
 │   └── eval/
-│       ├── qa_set_template.json   # Template starter con 5 Q&A curadas
+│       ├── qa_set.json            # 20 Q&A con ground truth
+│       ├── qa_set_template.json   # 5 Q&A starter
 │       └── results.json           # (generado por evaluate.py)
 │
-├── tests/                         # Tests (pytest)
+├── tests/                         # Tests (pytest, 11 tests, ~9s)
 │   ├── test_chunker.py
 │   ├── test_hybrid_search.py
 │   └── test_pipeline_query.py
 │
-└── docs/                          # Documentación adicional
+└── docs/                          # Documentación
     ├── ARCHITECTURE.md            # Decisiones técnicas detalladas
-    ├── EVALUATION.md              # Cómo interpretar métricas RAGAS
-    └── INTERVIEW_TALKING_POINTS.md  # Cómo presentar el proyecto
+    ├── EVALUATION.md              # Cómo interpretar métricas
+    ├── INTERVIEW_TALKING_POINTS.md  # Cómo presentar el proyecto
+    ├── DEPLOY_DATABRICKS.md       # Setup Free Edition, gotchas y cleanup
+    ├── adr/                       # Architecture Decision Records
+    │   ├── README.md
+    │   ├── 0001-bge-m3-embedding-model.md
+    │   ├── 0002-hybrid-search-bm25-vector.md
+    │   ├── 0003-rerank-cross-encoder.md
+    │   ├── 0004-vector-store-abstraction.md
+    │   └── 0005-gemini-flash-lite.md
+    └── img/
+        └── streamlit-demo.jpg
 ```
 
 ---
@@ -291,16 +316,36 @@ Elegí uno que conozcas bien — el dominio importa para evaluar la calidad de l
 
 ## 📈 Métricas de evaluación (RAGAS)
 
-Cuando corras la evaluación, apuntá a estos números:
+### Ablation: ¿cuánto aporta cada componente?
 
-| Métrica | Qué mide | Target |
-|---|---|---|
-| **Faithfulness** | ¿La respuesta es fiel al contexto recuperado? | > 0.85 |
-| **Context Precision** | ¿Los chunks recuperados son relevantes? | > 0.75 |
-| **Context Recall** | ¿Estamos recuperando toda la info necesaria? | > 0.80 |
-| **Answer Relevancy** | ¿La respuesta es relevante a la pregunta? | > 0.85 |
+Comparación de las 3 configuraciones de retrieval sobre 20 Q&A con ground truth (corpus de 18 chunks):
 
-Si llegás a esos números con 30+ preguntas, estás en el top 10% de implementaciones RAG. Ver [`docs/EVALUATION.md`](docs/EVALUATION.md) para cómo interpretar resultados y diagnosticar problemas.
+| Configuración | Hit@1 | Hit@3 | Hit@5 | MRR | Latencia |
+|---------------|-------|-------|-------|-----|----------|
+| **vector-only** (BGE-M3) | 0.900 | 0.900 | 0.900 | 0.900 | 88 ms |
+| **hybrid** (BM25 + vector, RRF) | 0.900 | 0.900 | 0.900 | 0.900 | 77 ms |
+| **hybrid + rerank** (BGE-reranker) | 0.850 | 0.900 | 0.900 | 0.867 | 5086 ms |
+
+> **Hallazgo**: en este corpus chico, el re-ranker cross-encoder **empeoró** Hit@1 (0.85 vs 0.90) y agregó 58× latencia. El sweet spot es `hybrid sin rerank`. El rerank solo ayuda con corpus >10K chunks. Ver [`docs/adr/0003-rerank-cross-encoder.md`](docs/adr/0003-rerank-cross-encoder.md) para el análisis completo.
+
+Para reproducir: `python scripts/ablation.py --eval-set data/eval/qa_set.json`
+
+### RAGAS-style metrics (generación)
+
+Lightweight evaluation con Gemini Flash-Lite como judge (1 call por pregunta, ~5x más barato que full RAGAS):
+
+| Métrica | Valor | Target |
+|---------|-------|--------|
+| **Faithfulness** | 0.87 | > 0.85 ✅ |
+| **Answer Relevancy** | 1.00 | > 0.85 ✅ |
+| **Context Precision** | 0.40 | > 0.75 ⚠️ |
+| **Context Recall** | 0.59 | > 0.80 ⚠️ |
+
+> Faithfulness y answer_relevancy en rango. Precision/recall bajos son por la LLM-as-judge siendo estricta con respuestas largas y ground_truths específicos — son métricas "duras" que castigan a sistemas con respuestas comprehensivas.
+
+Para reproducir: `python scripts/evaluate_light.py --eval-set data/eval/qa_set.json`
+
+Si llegás a los targets de faithfulness y answer_relevancy con 20+ Q&A, estás en el top 10% de implementaciones RAG. Ver [`docs/EVALUATION.md`](docs/EVALUATION.md) para cómo interpretar y diagnosticar.
 
 ---
 

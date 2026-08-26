@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install pytest ruff
+
+      - name: Lint with ruff
+        run: |
+          ruff check app/ scripts/ tests/
+          # Don't fail on format issues, just report
+          ruff format --check app/ scripts/ tests/ || true
+
+      - name: Type check with mypy (permissive)
+        run: |
+          python -m pip install mypy
+          mypy app/ --ignore-missing-imports --no-strict-optional || true
+
+      - name: Run unit tests
+        env:
+          # CI uses Chroma (no Databricks creds needed). Use a fake key to
+          # avoid import-time failures in the generator module.
+          GOOGLE_API_KEY: ci-placeholder-not-used
+          VECTOR_STORE_BACKEND: chroma
+          EMBEDDING_MODEL: ''  # skip model load in tests
+        run: |
+          # Skip tests that load real BGE-M3 weights; CI uses stubs.
+          pytest tests/ -x -q --tb=short

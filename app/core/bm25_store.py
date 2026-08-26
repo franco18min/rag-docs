@@ -9,13 +9,12 @@ from __future__ import annotations
 
 import pickle
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Optional
 
 from rank_bm25 import BM25Okapi
 
 from app.config import settings
-
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9_]+")
 
@@ -27,9 +26,9 @@ def _tokenize(text: str) -> list[str]:
 class BM25Store:
     """Wrapper around rank_bm25 with on-disk persistence."""
 
-    def __init__(self, persist_path: Optional[str] = None):
+    def __init__(self, persist_path: str | None = None):
         self.persist_path = Path(persist_path or settings.bm25_persist_path).resolve()
-        self.bm25: Optional[BM25Okapi] = None
+        self.bm25: BM25Okapi | None = None
         self.docs: list[dict] = []  # each: {id, text, metadata}
         self._loaded = False
 
@@ -109,7 +108,7 @@ class BM25Store:
         denom = max(max_s - min_s, 1e-9)
 
         results: list[dict] = []
-        for idx, score in zip(top_indices, top_scores):
+        for idx, score in zip(top_indices, top_scores, strict=False):
             doc = self.docs[idx]
             results.append(
                 {

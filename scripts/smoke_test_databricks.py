@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 # .get_databricks_host_creds()`` which reads DATABRICKS_HOST/TOKEN env vars
 # directly, ignoring Pydantic settings.
 from dotenv import load_dotenv  # noqa: E402
+
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # Force the Databricks backend regardless of what the .env says
@@ -38,7 +39,6 @@ os.environ["VECTOR_STORE_BACKEND"] = "databricks"
 from databricks.sdk import WorkspaceClient  # noqa: E402
 
 from app.core.vector_store_databricks import DatabricksVectorStore  # noqa: E402
-
 
 # How long to wait for the Vector Search index to become ``ready=True``.
 # First-time provisioning of a STANDARD endpoint can take 2-5 minutes; the

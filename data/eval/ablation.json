@@ -1,0 +1,699 @@
+{
+  "eval_set": "data/eval/qa_set.json",
+  "top_k": 5,
+  "results": [
+    {
+      "config": "vector-only",
+      "num_questions": 20,
+      "hit_at_1": 0.9,
+      "hit_at_3": 0.9,
+      "hit_at_5": 0.9,
+      "mrr": 0.9,
+      "avg_latency_ms": 88.43286037445068,
+      "detail": [
+        {
+          "question": "¿Qué es Delta Lake y cuáles son sus principales garantías?",
+          "expected": "delta_lake_intro.md",
+          "top5": [
+            "delta_lake_intro.md",
+            "delta_lake_intro.md",
+            "delta_time_travel.md",
+            "bge_m3.md",
+            "databricks_vector_search.md"
+          ]
+        },
+        {
+          "question": "¿En qué se diferencian las capas Bronze, Silver y Gold de la arquitectura Medallion?",
+          "expected": "medallion_architecture.md",
+          "top5": [
+            "medallion_architecture.md",
+            "medallion_architecture.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Cómo funciona el Time Travel en Delta Lake?",
+          "expected": "delta_time_travel.md",
+          "top5": [
+            "delta_time_travel.md",
+            "delta_lake_intro.md",
+            "delta_lake_intro.md",
+            "delta_time_travel.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Qué ventajas tiene Structured Streaming sobre el streaming tradicional con DStreams?",
+          "expected": "structured_streaming.md",
+          "top5": [
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md"
+          ]
+        },
+        {
+          "question": "¿Cuándo conviene usar cache() vs persist() en Spark?",
+          "expected": "spark_persistence.md",
+          "top5": [
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "structured_streaming.md",
+            "structured_streaming.md"
+          ]
+        },
+        {
+          "question": "¿Cuáles son los tipos de endpoint de Databricks Vector Search y en qué se diferencian?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "structured_streaming.md",
+            "structured_streaming.md"
+          ]
+        },
+        {
+          "question": "¿Qué diferencia hay entre pre-computed embeddings y managed embeddings en Databricks Vector Search?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "structured_streaming.md",
+            "structured_streaming.md"
+          ]
+        },
+        {
+          "question": "¿Cuáles son los modos de sincronización de un índice Vector Search y cuándo usar cada uno?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "bge_m3.md",
+            "delta_time_travel.md"
+          ]
+        },
+        {
+          "question": "¿Cuáles son las dimensiones y el tamaño del modelo BGE-M3?",
+          "expected": "bge_m3.md",
+          "top5": [
+            "bge_m3.md",
+            "bge_m3.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md"
+          ]
+        },
+        {
+          "question": "¿Cuándo conviene elegir BGE-M3 y cuándo NO?",
+          "expected": "bge_m3.md",
+          "top5": [
+            "bge_m3.md",
+            "bge_m3.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Qué hace el comando VACUUM en Delta Lake y por qué importa para Time Travel?",
+          "expected": "delta_time_travel.md",
+          "top5": [
+            "delta_time_travel.md",
+            "delta_time_travel.md",
+            "delta_lake_intro.md",
+            "delta_lake_intro.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Qué es el comando RESTORE en Delta Lake y cómo se diferencia de un SELECT con VERSION AS OF?",
+          "expected": "delta_time_travel.md",
+          "top5": [
+            "delta_time_travel.md",
+            "delta_lake_intro.md",
+            "delta_lake_intro.md",
+            "spark_persistence.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Qué es el modo continuous de Structured Streaming y cuándo es útil?",
+          "expected": "structured_streaming.md",
+          "top5": [
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Qué métricas de rendimiento expone la Spark UI para diagnosticar problemas con cache/persist?",
+          "expected": "spark_persistence.md",
+          "top5": [
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "structured_streaming.md",
+            "structured_streaming.md"
+          ]
+        },
+        {
+          "question": "¿Cómo se especifica la columna de embeddings pre-calculados al crear un índice Vector Search?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "bge_m3.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Qué es la Reciprocal Rank Fusion (RRF) y por qué se usa en búsqueda híbrida?",
+          "expected": "",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "bge_m3.md",
+            "spark_persistence.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Por qué el cross-encoder (BGE-reranker) es más preciso que el bi-encoder (BGE-M3) en re-ranking?",
+          "expected": "bge_m3.md",
+          "top5": [
+            "bge_m3.md",
+            "bge_m3.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Cuántos chunks produce el chunker por defecto y por qué se usa overlap?",
+          "expected": "",
+          "top5": [
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md",
+            "bge_m3.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Qué columnas debe tener la Delta table que sirve como source de un índice Vector Search?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "delta_lake_intro.md",
+            "delta_lake_intro.md"
+          ]
+        },
+        {
+          "question": "¿Cómo escala el patrón multi-hop de la arquitectura Medallion ante fallos?",
+          "expected": "medallion_architecture.md",
+          "top5": [
+            "medallion_architecture.md",
+            "spark_persistence.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "medallion_architecture.md"
+          ]
+        }
+      ]
+    },
+    {
+      "config": "hybrid (BM25+vector, RRF)",
+      "num_questions": 20,
+      "hit_at_1": 0.9,
+      "hit_at_3": 0.9,
+      "hit_at_5": 0.9,
+      "mrr": 0.9,
+      "avg_latency_ms": 77.16375589370728,
+      "detail": [
+        {
+          "question": "¿Qué es Delta Lake y cuáles son sus principales garantías?",
+          "expected": "delta_lake_intro.md",
+          "top5": [
+            "delta_lake_intro.md",
+            "delta_lake_intro.md",
+            "delta_time_travel.md",
+            "bge_m3.md",
+            "databricks_vector_search.md"
+          ]
+        },
+        {
+          "question": "¿En qué se diferencian las capas Bronze, Silver y Gold de la arquitectura Medallion?",
+          "expected": "medallion_architecture.md",
+          "top5": [
+            "medallion_architecture.md",
+            "medallion_architecture.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Cómo funciona el Time Travel en Delta Lake?",
+          "expected": "delta_time_travel.md",
+          "top5": [
+            "delta_time_travel.md",
+            "delta_lake_intro.md",
+            "delta_lake_intro.md",
+            "delta_time_travel.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Qué ventajas tiene Structured Streaming sobre el streaming tradicional con DStreams?",
+          "expected": "structured_streaming.md",
+          "top5": [
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md"
+          ]
+        },
+        {
+          "question": "¿Cuándo conviene usar cache() vs persist() en Spark?",
+          "expected": "spark_persistence.md",
+          "top5": [
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "structured_streaming.md",
+            "structured_streaming.md"
+          ]
+        },
+        {
+          "question": "¿Cuáles son los tipos de endpoint de Databricks Vector Search y en qué se diferencian?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "structured_streaming.md",
+            "structured_streaming.md"
+          ]
+        },
+        {
+          "question": "¿Qué diferencia hay entre pre-computed embeddings y managed embeddings en Databricks Vector Search?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "structured_streaming.md",
+            "structured_streaming.md"
+          ]
+        },
+        {
+          "question": "¿Cuáles son los modos de sincronización de un índice Vector Search y cuándo usar cada uno?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "bge_m3.md",
+            "delta_time_travel.md"
+          ]
+        },
+        {
+          "question": "¿Cuáles son las dimensiones y el tamaño del modelo BGE-M3?",
+          "expected": "bge_m3.md",
+          "top5": [
+            "bge_m3.md",
+            "bge_m3.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md"
+          ]
+        },
+        {
+          "question": "¿Cuándo conviene elegir BGE-M3 y cuándo NO?",
+          "expected": "bge_m3.md",
+          "top5": [
+            "bge_m3.md",
+            "bge_m3.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Qué hace el comando VACUUM en Delta Lake y por qué importa para Time Travel?",
+          "expected": "delta_time_travel.md",
+          "top5": [
+            "delta_time_travel.md",
+            "delta_time_travel.md",
+            "delta_lake_intro.md",
+            "delta_lake_intro.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Qué es el comando RESTORE en Delta Lake y cómo se diferencia de un SELECT con VERSION AS OF?",
+          "expected": "delta_time_travel.md",
+          "top5": [
+            "delta_time_travel.md",
+            "delta_lake_intro.md",
+            "delta_lake_intro.md",
+            "spark_persistence.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Qué es el modo continuous de Structured Streaming y cuándo es útil?",
+          "expected": "structured_streaming.md",
+          "top5": [
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Qué métricas de rendimiento expone la Spark UI para diagnosticar problemas con cache/persist?",
+          "expected": "spark_persistence.md",
+          "top5": [
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "structured_streaming.md",
+            "structured_streaming.md"
+          ]
+        },
+        {
+          "question": "¿Cómo se especifica la columna de embeddings pre-calculados al crear un índice Vector Search?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "bge_m3.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Qué es la Reciprocal Rank Fusion (RRF) y por qué se usa en búsqueda híbrida?",
+          "expected": "",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "bge_m3.md",
+            "spark_persistence.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Por qué el cross-encoder (BGE-reranker) es más preciso que el bi-encoder (BGE-M3) en re-ranking?",
+          "expected": "bge_m3.md",
+          "top5": [
+            "bge_m3.md",
+            "bge_m3.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Cuántos chunks produce el chunker por defecto y por qué se usa overlap?",
+          "expected": "",
+          "top5": [
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md",
+            "bge_m3.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Qué columnas debe tener la Delta table que sirve como source de un índice Vector Search?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "delta_lake_intro.md",
+            "delta_lake_intro.md"
+          ]
+        },
+        {
+          "question": "¿Cómo escala el patrón multi-hop de la arquitectura Medallion ante fallos?",
+          "expected": "medallion_architecture.md",
+          "top5": [
+            "medallion_architecture.md",
+            "spark_persistence.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "medallion_architecture.md"
+          ]
+        }
+      ]
+    },
+    {
+      "config": "hybrid + rerank (full stack)",
+      "num_questions": 20,
+      "hit_at_1": 0.85,
+      "hit_at_3": 0.9,
+      "hit_at_5": 0.9,
+      "mrr": 0.8666666666666668,
+      "avg_latency_ms": 5085.560917854309,
+      "detail": [
+        {
+          "question": "¿Qué es Delta Lake y cuáles son sus principales garantías?",
+          "expected": "delta_lake_intro.md",
+          "top5": [
+            "delta_lake_intro.md",
+            "bge_m3.md",
+            "bge_m3.md",
+            "structured_streaming.md",
+            "delta_time_travel.md"
+          ]
+        },
+        {
+          "question": "¿En qué se diferencian las capas Bronze, Silver y Gold de la arquitectura Medallion?",
+          "expected": "medallion_architecture.md",
+          "top5": [
+            "medallion_architecture.md",
+            "medallion_architecture.md",
+            "delta_time_travel.md",
+            "delta_lake_intro.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Cómo funciona el Time Travel en Delta Lake?",
+          "expected": "delta_time_travel.md",
+          "top5": [
+            "delta_time_travel.md",
+            "delta_lake_intro.md",
+            "delta_time_travel.md",
+            "bge_m3.md",
+            "delta_lake_intro.md"
+          ]
+        },
+        {
+          "question": "¿Qué ventajas tiene Structured Streaming sobre el streaming tradicional con DStreams?",
+          "expected": "structured_streaming.md",
+          "top5": [
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "spark_persistence.md",
+            "medallion_architecture.md"
+          ]
+        },
+        {
+          "question": "¿Cuándo conviene usar cache() vs persist() en Spark?",
+          "expected": "spark_persistence.md",
+          "top5": [
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "medallion_architecture.md",
+            "delta_lake_intro.md"
+          ]
+        },
+        {
+          "question": "¿Cuáles son los tipos de endpoint de Databricks Vector Search y en qué se diferencian?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "medallion_architecture.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Qué diferencia hay entre pre-computed embeddings y managed embeddings en Databricks Vector Search?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "medallion_architecture.md",
+            "databricks_vector_search.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Cuáles son los modos de sincronización de un índice Vector Search y cuándo usar cada uno?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md",
+            "medallion_architecture.md"
+          ]
+        },
+        {
+          "question": "¿Cuáles son las dimensiones y el tamaño del modelo BGE-M3?",
+          "expected": "bge_m3.md",
+          "top5": [
+            "bge_m3.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Cuándo conviene elegir BGE-M3 y cuándo NO?",
+          "expected": "bge_m3.md",
+          "top5": [
+            "bge_m3.md",
+            "bge_m3.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md"
+          ]
+        },
+        {
+          "question": "¿Qué hace el comando VACUUM en Delta Lake y por qué importa para Time Travel?",
+          "expected": "delta_time_travel.md",
+          "top5": [
+            "delta_lake_intro.md",
+            "delta_lake_intro.md",
+            "delta_time_travel.md",
+            "delta_time_travel.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Qué es el comando RESTORE en Delta Lake y cómo se diferencia de un SELECT con VERSION AS OF?",
+          "expected": "delta_time_travel.md",
+          "top5": [
+            "delta_time_travel.md",
+            "delta_lake_intro.md",
+            "delta_lake_intro.md",
+            "bge_m3.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Qué es el modo continuous de Structured Streaming y cuándo es útil?",
+          "expected": "structured_streaming.md",
+          "top5": [
+            "structured_streaming.md",
+            "structured_streaming.md",
+            "spark_persistence.md",
+            "databricks_vector_search.md",
+            "structured_streaming.md"
+          ]
+        },
+        {
+          "question": "¿Qué métricas de rendimiento expone la Spark UI para diagnosticar problemas con cache/persist?",
+          "expected": "spark_persistence.md",
+          "top5": [
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "spark_persistence.md",
+            "medallion_architecture.md",
+            "structured_streaming.md"
+          ]
+        },
+        {
+          "question": "¿Cómo se especifica la columna de embeddings pre-calculados al crear un índice Vector Search?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "medallion_architecture.md",
+            "spark_persistence.md"
+          ]
+        },
+        {
+          "question": "¿Qué es la Reciprocal Rank Fusion (RRF) y por qué se usa en búsqueda híbrida?",
+          "expected": "",
+          "top5": [
+            "medallion_architecture.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "bge_m3.md",
+            "medallion_architecture.md"
+          ]
+        },
+        {
+          "question": "¿Por qué el cross-encoder (BGE-reranker) es más preciso que el bi-encoder (BGE-M3) en re-ranking?",
+          "expected": "bge_m3.md",
+          "top5": [
+            "bge_m3.md",
+            "bge_m3.md",
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "bge_m3.md"
+          ]
+        },
+        {
+          "question": "¿Cuántos chunks produce el chunker por defecto y por qué se usa overlap?",
+          "expected": "",
+          "top5": [
+            "delta_time_travel.md",
+            "delta_lake_intro.md",
+            "bge_m3.md",
+            "bge_m3.md",
+            "databricks_vector_search.md"
+          ]
+        },
+        {
+          "question": "¿Qué columnas debe tener la Delta table que sirve como source de un índice Vector Search?",
+          "expected": "databricks_vector_search.md",
+          "top5": [
+            "databricks_vector_search.md",
+            "databricks_vector_search.md",
+            "medallion_architecture.md",
+            "databricks_vector_search.md",
+            "delta_time_travel.md"
+          ]
+        },
+        {
+          "question": "¿Cómo escala el patrón multi-hop de la arquitectura Medallion ante fallos?",
+          "expected": "medallion_architecture.md",
+          "top5": [
+            "medallion_architecture.md",
+            "medallion_architecture.md",
+            "databricks_vector_search.md",
+            "spark_persistence.md",
+            "bge_m3.md"
+          ]
+        }
+      ]
+    }
+  ]
+}

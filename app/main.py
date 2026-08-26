@@ -12,7 +12,6 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import Optional
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -23,7 +22,6 @@ from app.config import settings
 from app.core.pipeline import RAGPipeline
 from app.models.query import IngestRequest, QueryRequest
 from app.models.response import HealthResponse, IngestResponse, QueryResponse
-
 
 # ---- Logging ----
 logging.basicConfig(
@@ -50,7 +48,7 @@ app.add_middleware(
 
 
 # ---- Pipeline (lazy singleton) ----
-_pipeline: Optional[RAGPipeline] = None
+_pipeline: RAGPipeline | None = None
 
 
 def get_pipeline() -> RAGPipeline:
@@ -67,7 +65,7 @@ async def health():
     try:
         pipeline = get_pipeline()
         collections = pipeline.collections()
-    except Exception as e:
+    except Exception:
         logger.exception("Health check failed")
         return HealthResponse(
             status="degraded",
@@ -95,7 +93,7 @@ async def list_collections():
         return {"collections": pipeline.collections()}
     except Exception as e:
         logger.exception("List collections failed")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.post("/query", response_model=QueryResponse)
@@ -121,10 +119,10 @@ async def query(request: QueryRequest):
         )
     except ValueError as e:
         # Missing API key etc.
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Query failed")
-        raise HTTPException(status_code=500, detail=f"Query failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Query failed: {e}") from e
 
 
 @app.post("/ingest", response_model=IngestResponse)
@@ -165,7 +163,7 @@ async def ingest(request: IngestRequest):
         raise
     except Exception as e:
         logger.exception("Ingest failed")
-        raise HTTPException(status_code=500, detail=f"Ingest failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Ingest failed: {e}") from e
 
 
 # ---- Entry point ----

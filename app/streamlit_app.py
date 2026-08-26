@@ -10,13 +10,11 @@ The UI talks to the FastAPI backend at the URL configured in `api_url`
 from __future__ import annotations
 
 import os
-from typing import Optional
 
 import requests
 import streamlit as st
 
 from app.config import settings
-
 
 API_URL = os.getenv("RAG_API_URL", "http://localhost:8000")
 DEFAULT_COLLECTION = settings.collection_name
@@ -132,7 +130,7 @@ def main():
 
     # ---- Citations ----
     citations = response.get("citations", [])
-    if citations:
+    if show_chunks and citations:
         st.subheader("📎 Citas")
         for i, c in enumerate(citations, start=1):
             with st.expander(

@@ -21,9 +21,7 @@ import sys
 import time
 from pathlib import Path
 
-from app.config import settings
 from app.core.pipeline import RAGPipeline
-
 
 logger = logging.getLogger("evaluate")
 
@@ -44,7 +42,7 @@ def main():
         print(f"❌ Eval set not found: {eval_path}")
         print("   Generá uno con: python -m scripts.generate_eval_set --collection <name>")
         sys.exit(1)
-    with open(eval_path, "r", encoding="utf-8") as f:
+    with open(eval_path, encoding="utf-8") as f:
         qa_pairs = json.load(f)
     print(f"📋 {len(qa_pairs)} Q&A pairs loaded from {eval_path}")
 

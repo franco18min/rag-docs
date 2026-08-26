@@ -10,8 +10,6 @@ individual Rank Learning Methods", SIGIR 2009.
 """
 from __future__ import annotations
 
-from typing import Optional
-
 from app.config import settings
 from app.core.bm25_store import BM25Store
 from app.core.vector_store import VectorStore
@@ -24,7 +22,7 @@ class HybridSearch:
         self,
         vector_store: VectorStore,
         bm25_store: BM25Store,
-        rrf_k: Optional[int] = None,
+        rrf_k: int | None = None,
     ):
         self.vector_store = vector_store
         self.bm25_store = bm25_store

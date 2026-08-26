@@ -19,9 +19,6 @@ Design notes:
 from __future__ import annotations
 
 import logging
-from typing import Optional
-
-from databricks.sdk import WorkspaceClient
 
 # Databricks rebranded Vector Search to "AI Search" in 2025. The backend
 # now treats STANDARD Vector Search endpoints as AI Search endpoints and
@@ -29,6 +26,7 @@ from databricks.sdk import WorkspaceClient
 # The ``databricks-vectorsearch`` package is now a thin re-export of
 # ``databricks-ai-search``; we import the new client directly.
 from databricks.ai_search.client import AISearchClient
+from databricks.sdk import WorkspaceClient
 
 from app.config import settings
 
@@ -40,11 +38,11 @@ class DatabricksVectorStore:
 
     def __init__(
         self,
-        host: Optional[str] = None,
-        token: Optional[str] = None,
-        catalog: Optional[str] = None,
-        schema: Optional[str] = None,
-        endpoint: Optional[str] = None,
+        host: str | None = None,
+        token: str | None = None,
+        catalog: str | None = None,
+        schema: str | None = None,
+        endpoint: str | None = None,
     ):
         self.host = host or settings.databricks_host
         self.token = token or settings.databricks_token
@@ -277,7 +275,7 @@ class DatabricksVectorStore:
         # ARRAY<FLOAT> when the values are floats. We also keep the
         # single-row-per-INSERT path because the parser has the same bug
         # with multi-row VALUES tuples containing array literals.
-        for _id, emb, doc, meta in zip(ids, embeddings, documents, metadatas):
+        for _id, emb, doc, meta in zip(ids, embeddings, documents, metadatas, strict=False):
             chunk_index = int(meta.get("chunk_index", 0)) if isinstance(meta, dict) else 0
             source = str(meta.get("source", "")) if isinstance(meta, dict) else ""
             meta_json = _json.dumps(meta, ensure_ascii=False) if isinstance(meta, dict) else "{}"
@@ -294,7 +292,7 @@ class DatabricksVectorStore:
         # ARRAY<FLOAT> when the values are floats. We also keep the
         # single-row-per-INSERT path because the parser has the same bug
         # with multi-row VALUES tuples containing array literals.
-        for _id, emb, doc, meta in zip(ids, embeddings, documents, metadatas):
+        for _id, emb, doc, meta in zip(ids, embeddings, documents, metadatas, strict=False):
             chunk_index = int(meta.get("chunk_index", 0)) if isinstance(meta, dict) else 0
             source = str(meta.get("source", "")) if isinstance(meta, dict) else ""
             meta_json = _json.dumps(meta, ensure_ascii=False) if isinstance(meta, dict) else "{}"
@@ -337,7 +335,7 @@ class DatabricksVectorStore:
         collection: str,
         query_embedding: list[float],
         top_k: int = 20,
-        where: Optional[dict] = None,
+        where: dict | None = None,
     ) -> list[dict]:
         """Top-k ANN search against the Vector Search index."""
         index_name = self._index_name(collection)
@@ -403,7 +401,7 @@ class DatabricksVectorStore:
         # strings — escape single quotes
         return "(" + ", ".join("'" + str(x).replace("'", "''") + "'" for x in items) + ")"
 
-    def _warehouse_id(self) -> Optional[str]:
+    def _warehouse_id(self) -> str | None:
         """Pick the first available SQL warehouse (Free Edition ships one)."""
         try:
             # ``warehouses.list()`` returns a generator; materialize first so

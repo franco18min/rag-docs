@@ -4,13 +4,10 @@ These tests do NOT need GOOGLE_API_KEY, BGE-M3 downloads, or any external
 service. They wire fake stores into the pipeline and verify orchestration.
 """
 import numpy as np
-import pytest
 
 from app.core.bm25_store import BM25Store
 from app.core.chunker import Chunker
-from app.core.embedder import Embedder
 from app.core.pipeline import RAGPipeline
-from app.core.reranker import Reranker
 from app.core.vector_store import VectorStore
 
 

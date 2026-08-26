@@ -11,7 +11,6 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -77,7 +76,7 @@ class Settings(BaseSettings):
         return bool(self.google_api_key)
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     """Get cached settings instance."""
     return Settings()

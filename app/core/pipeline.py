@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Optional
 
 from app.config import settings
 from app.core.bm25_store import BM25Store
@@ -23,7 +22,6 @@ from app.core.reranker import Reranker
 from app.core.store_factory import get_vector_store
 from app.core.vector_store import VectorStore
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,12 +30,12 @@ class RAGPipeline:
 
     def __init__(
         self,
-        embedder: Optional[Embedder] = None,
-        vector_store: Optional[VectorStore] = None,
-        bm25_store: Optional[BM25Store] = None,
-        reranker: Optional[Reranker] = None,
-        generator: Optional[Generator] = None,
-        chunker: Optional[Chunker] = None,
+        embedder: Embedder | None = None,
+        vector_store: VectorStore | None = None,
+        bm25_store: BM25Store | None = None,
+        reranker: Reranker | None = None,
+        generator: Generator | None = None,
+        chunker: Chunker | None = None,
     ):
         # Lazy-loaded, expensive objects are passed in so we can mock in tests
         self.embedder = embedder or Embedder()
@@ -48,7 +46,7 @@ class RAGPipeline:
         self.reranker = reranker or Reranker()
         # Generator requires API key — only build it lazily so the API can
         # still start (and ingestion works) without a key.
-        self._generator: Optional[Generator] = generator
+        self._generator: Generator | None = generator
         self.chunker = chunker or Chunker()
         self.hybrid_search = HybridSearch(self.vector_store, self.bm25_store)
 
@@ -136,8 +134,8 @@ class RAGPipeline:
     def query(
         self,
         question: str,
-        collection: Optional[str] = None,
-        top_k: Optional[int] = None,
+        collection: str | None = None,
+        top_k: int | None = None,
     ) -> dict:
         """End-to-end query: embed → hybrid search → rerank → generate.
 

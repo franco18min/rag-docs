@@ -9,7 +9,6 @@ candidate set (typically top-20 from hybrid → top-5).
 from __future__ import annotations
 
 import os
-from typing import Optional
 
 # Silence HF noise
 os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
@@ -22,14 +21,14 @@ from app.config import settings
 class Reranker:
     """Lazy-loaded singleton wrapper around sentence-transformers CrossEncoder."""
 
-    _instance: Optional["Reranker"] = None
+    _instance: Reranker | None = None
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, model_name: Optional[str] = None):
+    def __init__(self, model_name: str | None = None):
         if getattr(self, "_initialized", False):
             return
         self.model_name = model_name or settings.reranker_model
@@ -40,7 +39,7 @@ class Reranker:
         self,
         query: str,
         candidates: list[dict],
-        top_k: Optional[int] = None,
+        top_k: int | None = None,
     ) -> list[dict]:
         """Re-rank candidates for a query.
 
@@ -64,7 +63,7 @@ class Reranker:
         raw_scores = self.model.predict(pairs, show_progress_bar=False)
 
         # Attach scores and sort
-        for c, s in zip(candidates, raw_scores):
+        for c, s in zip(candidates, raw_scores, strict=False):
             c["rerank_score"] = float(s)
 
         sorted_candidates = sorted(candidates, key=lambda c: c["rerank_score"], reverse=True)[:top_k]

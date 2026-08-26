@@ -15,11 +15,9 @@ import logging
 import sys
 import time
 
-from app.config import settings
 from app.core.chunker import Chunker
 from app.core.loaders import SUPPORTED_EXTENSIONS, load_documents
 from app.core.pipeline import RAGPipeline
-
 
 logger = logging.getLogger("ingest")
 

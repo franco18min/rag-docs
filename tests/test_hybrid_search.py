@@ -1,5 +1,4 @@
 """Tests for the hybrid search RRF fusion."""
-import pytest
 
 from app.core.hybrid_search import HybridSearch
 

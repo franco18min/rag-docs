@@ -14,7 +14,6 @@ from __future__ import annotations
 import argparse
 import os
 import sys
-import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -22,8 +21,8 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-from databricks.sdk import WorkspaceClient
 from databricks.ai_search.client import AISearchClient
+from databricks.sdk import WorkspaceClient
 
 
 def delete_index(client, endpoint, name):
@@ -90,12 +89,12 @@ def main():
     p.add_argument("--keep-catalog", action="store_true")
     args = p.parse_args()
 
-    print(f"Cleanup target:")
+    print("Cleanup target:")
     print(f"  catalog={args.catalog}  schema={args.schema}")
     print(f"  endpoint={args.endpoint}  collection={args.collection}\n")
 
     table_full = f"{args.catalog}.{args.schema}.{args.collection}"
-    index_full = f"{catalog}.{schema}.{args.collection}_idx" if False else f"{args.catalog}.{args.schema}.{args.collection}_idx"
+    index_full = f"{args.catalog}.{args.schema}.{args.collection}_idx"
 
     ws = WorkspaceClient()
     client = AISearchClient()
