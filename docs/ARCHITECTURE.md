@@ -1,4 +1,4 @@
-# 🏗️ Architecture & Technical Decisions
+# Architecture & Technical Decisions
 
 This document explains *why* the system is built the way it is — the trade-offs
 considered, the alternatives rejected, and the design choices that affect

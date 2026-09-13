@@ -1,4 +1,4 @@
-# 📚 RAG Docs — Sistema de Preguntas y Respuestas sobre Documentación Técnica
+# RAG Docs — Sistema de Preguntas y Respuestas sobre Documentación Técnica
 
 > Un sistema RAG (Retrieval-Augmented Generation) production-grade que ingiere documentación técnica, la indexa con búsqueda híbrida, y responde preguntas con citas a las fuentes. **Costo total: USD 0** usando Google Gemini, BGE-M3 y Chroma (dev) / Databricks Vector Search (deploy).
 
@@ -13,19 +13,19 @@
 
 ---
 
-## 🎯 ¿Por qué este proyecto?
+## ¿Por qué este proyecto?
 
 Sistema RAG production-grade sobre documentación técnica con búsqueda híbrida, re-ranking y evaluación sistemática. Demuestra:
 
-- ✅ Diseño de pipelines de ingestión (transferible desde data engineering)
-- ✅ **Búsqueda híbrida** (BM25 + vector denso) con RRF y re-ranking cross-encoder
-- ✅ **Ablation study** que justifica cada decisión arquitectónica
-- ✅ **Evaluación sistemática** (20 Q&A con ground truth, RAGAS-style)
-- ✅ **5 ADRs** documentando decisiones técnicas
-- ✅ **CI** con GitHub Actions (lint + mypy + tests)
-- ✅ **Backend vendor-agnostic**: Chroma (local) ↔ Databricks Vector Search (prod)
-- ✅ **Deploy validado end-to-end** en Databricks Free Edition
-- ✅ **Costo de inferencia: USD 0** (Gemini Flash-Lite free tier)
+- Diseño de pipelines de ingestión (transferible desde data engineering)
+- **Búsqueda híbrida** (BM25 + vector denso) con RRF y re-ranking cross-encoder
+- **Ablation study** que justifica cada decisión arquitectónica
+- **Evaluación sistemática** (20 Q&A con ground truth, RAGAS-style)
+- **5 ADRs** documentando decisiones técnicas
+- **CI** con GitHub Actions (lint + mypy + tests)
+- **Backend vendor-agnostic**: Chroma (local) ↔ Databricks Vector Search (prod)
+- **Deploy validado end-to-end** en Databricks Free Edition
+- **Costo de inferencia: USD 0** (Gemini Flash-Lite free tier)
 
 Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deploy, ver:
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — decisiones técnicas y trade-offs
@@ -35,7 +35,7 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 
 ---
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ```
 ┌──────────────┐
@@ -72,7 +72,7 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 
 ---
 
-## 🛠️ Tech Stack (todo gratis)
+## Tech Stack (todo gratis)
 
 | Componente | Herramienta | Costo |
 |---|---|---|
@@ -92,7 +92,7 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 
 ---
 
-## ⚡ Quick Start (10 minutos al primer query)
+## Quick Start (10 minutos al primer query)
 
 ### 1. Setup
 
@@ -123,7 +123,7 @@ cp .env.example .env
 python -m scripts.ingest --source ./data/raw --collection spark_docs
 ```
 
-Vas a ver: chunking → embedding → indexing. Cuando termine: `🎉 Ingest complete: 247 chunks from 8 documents in 12.4s`.
+Vas a ver: chunking → embedding → indexing. Cuando termine: `Ingest complete: 247 chunks from 8 documents in 12.4s`.
 
 ### 3. Levantar la API
 
@@ -180,7 +180,7 @@ pytest tests/ -v
 
 ---
 
-## 📁 Estructura del proyecto
+## Estructura del proyecto
 
 ```
 rag-docs/
@@ -260,9 +260,9 @@ rag-docs/
 
 ---
 
-## 📊 Features implementadas
+## Features implementadas
 
-### Core (MVP) — ✅ listo y funcionando
+### Core (MVP) — listo y funcionando
 - [x] Ingesta de PDFs, Markdown, HTML, TXT
 - [x] Chunking sliding-window con tiktoken (512/64) + metadata rica
 - [x] Embeddings locales con BGE-M3 (multilingüe, 1024-dim)
@@ -282,7 +282,7 @@ rag-docs/
 
 ---
 
-## 📈 Métricas de evaluación (RAGAS)
+## Métricas de evaluación (RAGAS)
 
 ### Ablation: ¿cuánto aporta cada componente?
 
@@ -304,10 +304,10 @@ Lightweight evaluation con Gemini Flash-Lite como judge (1 call por pregunta, ~5
 
 | Métrica | Valor | Target |
 |---------|-------|--------|
-| **Faithfulness** | 0.87 | > 0.85 ✅ |
-| **Answer Relevancy** | 1.00 | > 0.85 ✅ |
-| **Context Precision** | 0.40 | > 0.75 ⚠️ |
-| **Context Recall** | 0.59 | > 0.80 ⚠️ |
+| **Faithfulness** | 0.87 | > 0.85 |
+| **Answer Relevancy** | 1.00 | > 0.85 |
+| **Context Precision** | 0.40 | > 0.75 |
+| **Context Recall** | 0.59 | > 0.80 |
 
 > Faithfulness y answer_relevancy en rango. Precision/recall bajos son por la LLM-as-judge siendo estricta con respuestas largas y ground_truths específicos — son métricas "duras" que castigan a sistemas con respuestas comprehensivas.
 
@@ -317,7 +317,7 @@ Si llegás a los targets de faithfulness y answer_relevancy con 20+ Q&A, estás 
 
 ---
 
-## 🚀 Deploy (gratis)
+## Deploy (gratis)
 
 ### Opción A: Docker Compose (local / VPS)
 
@@ -347,7 +347,7 @@ fly deploy
 
 ---
 
-## 📚 Recursos y referencias
+## Recursos y referencias
 
 - [RAGAS documentation](https://docs.ragas.io/)
 - [BGE embeddings paper](https://arxiv.org/abs/2402.03216)
@@ -357,6 +357,6 @@ fly deploy
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 MIT — usá esto como base, modificalo, hacé lo que quieras. Ver `LICENSE`.

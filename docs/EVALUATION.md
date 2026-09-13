@@ -1,4 +1,4 @@
-# 📊 Evaluation Guide
+# Evaluation Guide
 
 This project uses [RAGAS](https://docs.ragas.io/) to measure retrieval and
 generation quality. Evaluation is what separates a tutorial RAG from a
