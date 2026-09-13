@@ -7,7 +7,7 @@
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 ![Stack](https://img.shields.io/badge/stack-100%25%20gratis-success)
 ![Deploy](https://img.shields.io/badge/Databricks%20Free%20Edition-validated-blue)
-![CI](https://github.com/your-username/rag-docs/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/franco18min/rag-docs/actions/workflows/ci.yml/badge.svg)
 
 ![Streamlit demo: query "¿Qué garantías ACID ofrece Delta Lake?" with full citation-backed response](docs/img/streamlit-demo.jpg)
 
