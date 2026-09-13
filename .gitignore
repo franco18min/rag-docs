@@ -45,6 +45,9 @@ data/eval/light_results.json
 data/query_payload.json
 data/install.log
 
+# ===== Personal notes (kept locally, not part of the portfolio repo) =====
+.private/
+
 # ===== Temp / scratch scripts (kept locally, not in repo) =====
 scripts/_*.py
 _*.log

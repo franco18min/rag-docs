@@ -15,7 +15,7 @@
 
 ## 🎯 ¿Por qué este proyecto?
 
-Este es el **Proyecto 1** del roadmap de transición de Data Engineer a AI Engineer. Demuestra:
+Sistema RAG production-grade sobre documentación técnica con búsqueda híbrida, re-ranking y evaluación sistemática. Demuestra:
 
 - ✅ Diseño de pipelines de ingestión (transferible desde data engineering)
 - ✅ **Búsqueda híbrida** (BM25 + vector denso) con RRF y re-ranking cross-encoder
@@ -27,13 +27,9 @@ Este es el **Proyecto 1** del roadmap de transición de Data Engineer a AI Engin
 - ✅ **Deploy validado end-to-end** en Databricks Free Edition
 - ✅ **Costo de inferencia: USD 0** (Gemini Flash-Lite free tier)
 
-**Talking point para entrevistas:**
-> *"Construí un sistema RAG sobre documentación técnica con búsqueda híbrida, re-ranking cross-encoder, y evaluación sistemática sobre 20 Q&A con ground truth. La pipeline corre 100% en free tiers (Gemini Flash-Lite, BGE-M3 local, Chroma dev / Databricks Vector Search prod). El deploy en Databricks Free Edition está validado end-to-end. La ablation muestra que el re-ranker cross-encoder **empeoró** Hit@1 en mi corpus de 18 chunks (0.85 vs 0.90) — descubrí que para corpus chicos, hybrid sin rerank es el sweet spot, y documenté el por qué en el ADR-003."*
-
-Para más detalles sobre arquitectura, evaluación, talking points de entrevista, decisiones técnicas y deploy, ver:
+Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deploy, ver:
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — decisiones técnicas y trade-offs
 - [`docs/EVALUATION.md`](docs/EVALUATION.md) — cómo interpretar las métricas
-- [`docs/INTERVIEW_TALKING_POINTS.md`](docs/INTERVIEW_TALKING_POINTS.md) — cómo presentar el proyecto
 - [`docs/DEPLOY_DATABRICKS.md`](docs/DEPLOY_DATABRICKS.md) — setup Free Edition, gotchas y cleanup
 - [`docs/adr/`](docs/adr/README.md) — 5 Architecture Decision Records
 
@@ -250,7 +246,6 @@ rag-docs/
 └── docs/                          # Documentación
     ├── ARCHITECTURE.md            # Decisiones técnicas detalladas
     ├── EVALUATION.md              # Cómo interpretar métricas
-    ├── INTERVIEW_TALKING_POINTS.md  # Cómo presentar el proyecto
     ├── DEPLOY_DATABRICKS.md       # Setup Free Edition, gotchas y cleanup
     ├── adr/                       # Architecture Decision Records
     │   ├── README.md
@@ -283,34 +278,7 @@ rag-docs/
 - [x] Auto-generación de Q&A con Gemini para eval
 - [x] Tests unitarios (chunker, hybrid search, pipeline)
 - [x] Dockerfile + docker-compose
-- [x] Documentación: ARCHITECTURE, EVALUATION, INTERVIEW_TALKING_POINTS
-
-### Avances (post-MVP) — próximos pasos
-- [ ] Instrumentación con Langfuse (interface lista en `QueryResponse.trace_id`)
-- [ ] Cache de queries frecuentes (Redis layer)
-- [ ] Streaming de respuestas (Gemini lo soporta)
-- [ ] Conversational memory (multi-turn)
-- [ ] A/B testing de prompts
-- [ ] Migración a pgvector
-- [ ] CI/CD con GitHub Actions
-- [ ] Monitoring de costos / usage
-
----
-
-## 🎯 Datasets sugeridos para arrancar
-
-Elegí uno que conozcas bien — el dominio importa para evaluar la calidad de las respuestas.
-
-| Dataset | Cuándo usarlo | Tamaño |
-|---|---|---|
-| **Apache Spark docs** (EN) | Si querés mostrar dominio de big data | ~200 páginas |
-| **dbt documentation** (EN) | Si querés mostrar dominio de transformaciones | ~150 páginas |
-| **Databricks docs** (EN) | Si te interesa lakehouse (tu fuerte) | ~300 páginas |
-| **AFIP / BCRA normativa** (ES) | Si querés diferenciarte con dominio local argentino | ~100-200 PDFs |
-| **Manzur docs internos** | Si tenés acceso y querés algo real (cuidado con NDA) | Variable |
-| **Hadoop / Kafka docs** | Si querés ir a fundamentals | ~250 páginas |
-
-**Mi recomendación para vos:** arrancá con **Databricks docs** porque es donde más fuerte está tu background (Delta Lake, Medallion, Spark), y eso se nota cuando evaluás las respuestas.
+- [x] Documentación: ARCHITECTURE, EVALUATION
 
 ---
 
@@ -379,17 +347,6 @@ fly deploy
 
 ---
 
-## 🎤 Talking points para entrevistas
-
-Ver [`docs/INTERVIEW_TALKING_POINTS.md`](docs/INTERVIEW_TALKING_POINTS.md) para la guía completa. Resumen:
-
-- **30s pitch**: "RAG production-grade sobre docs técnicas con búsqueda híbrida, re-ranking cross-encoder, evaluación RAGAS, free tier."
-- **Lección clave**: "La diferencia entre un RAG de tutorial y uno de producción es la evaluación sistemática. Medir, iterar, medir."
-- **Por qué híbrida**: "Dense embeddings capturan semántica, BM25 captura exact match. Son complementarios en docs técnicas."
-- **Por qué re-ranking**: "Cross-encoder es ~100x más preciso pero ~100x más lento. Patrón: bi-encoder top-20 → cross-encoder top-5."
-
----
-
 ## 📚 Recursos y referencias
 
 - [RAGAS documentation](https://docs.ragas.io/)
@@ -400,45 +357,6 @@ Ver [`docs/INTERVIEW_TALKING_POINTS.md`](docs/INTERVIEW_TALKING_POINTS.md) para 
 
 ---
 
-## 🛣️ Roadmap personal
-
-### Semana 1-2: MVP básico ✅
-- [x] Setup del entorno + ingesta
-- [x] Pipeline simple: query → retrieve → generate
-- [x] API funcionando con curl
-
-### Semana 2-3: Mejoras de retrieval ✅
-- [x] Búsqueda híbrida BM25 + vector con RRF
-- [x] Re-ranking con cross-encoder
-- [x] Chunking con metadata rica
-
-### Semana 3-4: Evaluación y observability ✅ (parcial)
-- [x] Set de Q&A auto-generable con Gemini
-- [x] RAGAS runner con 4 métricas
-- [x] Tests unitarios
-- [x] Documentación completa
-- [ ] Langfuse self-hosted (interface lista, falta wire-up)
-
-### Semana 4: Polish y deploy 🟡
-- [x] UI Streamlit funcional
-- [x] Docker + docker-compose
-- [ ] Deploy público (Railway / HF Spaces)
-- [ ] Video demo de 2 minutos
-
----
-
 ## 📄 Licencia
 
 MIT — usá esto como base, modificalo, hacé lo que quieras. Ver `LICENSE`.
-
----
-
-## 🙋 Sobre el autor
-
-**Franco Aguilera** — Data Engineer en transición a AI Engineer. Jujuy, Argentina.
-
-- LinkedIn: [linkedin.com/in/franco-aguilera-data-engineer](https://linkedin.com/in/franco-aguilera-data-engineer)
-- GitHub: [github.com/franco18min](https://github.com/franco18min)
-- Email: magnagg@gmail.com
-
-Construyendo este proyecto como parte de un plan de 6 meses para transicionar de Data Engineering a AI Engineering. Stack: Python, SQL, PySpark, AWS, Databricks, ahora aprendiendo RAG, LLM APIs, y AI evaluation.
