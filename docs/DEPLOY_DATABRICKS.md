@@ -1,7 +1,8 @@
 # Deploy en Databricks (Free Edition)
 
-> Estado: **validado** con smoke test end-to-end el 2026-08-25 sobre la
-> Free Edition workspace `dbc-a421ea1a-be5b.cloud.databricks.com`.
+> Estado: guía para Databricks Free Edition. Reemplazá el host por el de
+> **tu** workspace (`https://<workspace-id>.cloud.databricks.com`). No uses
+> un workspace personal de terceros.
 
 Este documento describe cómo deployar el RAG pipeline en una workspace
 de Databricks Free Edition, dejando recursos prendidos solo el tiempo
@@ -12,19 +13,20 @@ necesario para la validación.
 ```bash
 # 1. Instalar dependencias
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 
 # 2. Configurar credenciales (ver sección "PAT" abajo)
 cp .env.example .env
-# Editar .env: pegar tu DATABRICKS_TOKEN
+# Editar .env: pegar tu DATABRICKS_TOKEN y DATABRICKS_HOST
 
 # 3. Provisionar catalog, schema, endpoint (UI o API)
 #    (Ver "Setup manual" más abajo)
 
 # 4. Smoke test end-to-end (crea tabla + index, ingiere 5 chunks, query, cleanup)
-$env:DATABRICKS_HOST='https://...'
-$env:DATABRICKS_TOKEN='dapi...'
-.\.venv\Scripts\python.exe scripts\smoke_test_databricks.py
+export DATABRICKS_HOST='https://<workspace-id>.cloud.databricks.com'
+export DATABRICKS_TOKEN='dapi...'
+python scripts/smoke_test_databricks.py
 ```
 
 ## Arquitectura
@@ -149,7 +151,7 @@ TBLPROPERTIES ('delta.enableChangeDataFeed' = 'true')
 ### 6. Configurar `.env`
 
 ```env
-DATABRICKS_HOST=https://dbc-xxxxx.cloud.databricks.com
+DATABRICKS_HOST=https://<workspace-id>.cloud.databricks.com
 DATABRICKS_TOKEN=dapi...  # ⚠️ no commitear (está en .gitignore)
 DATABRICKS_CATALOG=rag_docs
 DATABRICKS_SCHEMA=production
@@ -305,7 +307,8 @@ from app.core.vector_store_databricks import DatabricksVectorStore
 | PAT lifetime | Hasta 90 días | Configurable |
 
 **Para validar el MVP**: dejar el endpoint prendido ~30 min mientras corrés
-ingest + RAGAS + smoke test. Después, cleanup.
+ingest + `evaluate_light.py` + smoke test. Después, cleanup. RAGAS full
+no está soportado.
 
 ## Cleanup (importante — no dejar prendido)
 
@@ -341,7 +344,7 @@ ws.catalogs.delete("rag_docs")
 |------|---------|--------|------------|
 | Smoke test (4-dim) | `python scripts/smoke_test_databricks.py` | 3-5 min | Round-trip end-to-end con embeddings dummy |
 | Ingest real | `python -m scripts.ingest --source data/raw --collection spark_docs --rebuild` | 5-10 min | BGE-M3 embed + Delta write + Vector Search sync |
-| RAGAS eval | `python scripts/evaluate.py` | 5-10 min | faithfulness, context_precision, context_recall |
+| Eval light | `python scripts/evaluate_light.py` | 5-10 min | LLM-as-judge (RAGAS full no soportado) |
 | FastAPI local | `python -m uvicorn app.main:app` | inmediato | Endpoint /query end-to-end |
 
 ## Troubleshooting

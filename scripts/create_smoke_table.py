@@ -9,7 +9,7 @@ from urllib.error import HTTPError
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-host = os.environ.get("DATABRICKS_HOST", "https://dbc-a421ea1a-be5b.cloud.databricks.com")
+host = os.environ.get("DATABRICKS_HOST", "https://<workspace-id>.cloud.databricks.com")
 token = Path(".env").read_text(encoding="utf-8") if Path(".env").exists() else ""
 # Fall back to scraping from .env
 from app.config import settings

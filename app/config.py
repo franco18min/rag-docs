@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     api_port: int = Field(default=8000, alias="API_PORT")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
 
-    # ===== Langfuse (optional) =====
+    # ===== Langfuse (unused; not implemented) =====
     langfuse_public_key: str = Field(default="", alias="LANGFUSE_PUBLIC_KEY")
     langfuse_secret_key: str = Field(default="", alias="LANGFUSE_SECRET_KEY")
     langfuse_host: str = Field(default="http://localhost:3000", alias="LANGFUSE_HOST")
@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     )
 
     def has_langfuse(self) -> bool:
-        """Whether Langfuse credentials are configured."""
+        """Langfuse is not implemented; credentials are ignored if set."""
         return bool(self.langfuse_public_key and self.langfuse_secret_key)
 
     def has_gemini(self) -> bool:

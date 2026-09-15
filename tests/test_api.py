@@ -30,14 +30,16 @@ class _FakePipeline:
 
 
 def test_health_does_not_load_bge(monkeypatch):
-    main_mod._pipeline = None
-    monkeypatch.setattr(main_mod, "get_pipeline", lambda: _FakePipeline())
+    def _fail_pipeline():
+        raise AssertionError("GET /health must not call get_pipeline")
+
+    monkeypatch.setattr(main_mod, "get_pipeline", _fail_pipeline)
     client = TestClient(app)
     response = client.get("/health")
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ok"
-    assert "spark_docs" in body["collections"]
+    assert body["collections"] == []
 
 
 def test_query_with_fake_pipeline(monkeypatch):

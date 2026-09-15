@@ -1,12 +1,12 @@
 # RAG Docs — Sistema de Preguntas y Respuestas sobre Documentación Técnica
 
-> Un sistema RAG (Retrieval-Augmented Generation) production-grade que ingiere documentación técnica, la indexa con búsqueda híbrida, y responde preguntas con citas a las fuentes. **Costo total: USD 0** usando Google Gemini, BGE-M3 y Chroma (dev) / Databricks Vector Search (deploy).
+> MVP **evaluado**: un sistema RAG que ingiere documentación técnica, la indexa con búsqueda híbrida, y responde preguntas con citas a las fuentes. **Costo de inferencia: USD 0** usando Google Gemini, BGE-M3 y Chroma (dev) / Databricks Vector Search (opcional). No es un producto de plataforma.
 
 ![Status](https://img.shields.io/badge/status-MVP%20working-success)
 ![Python](https://img.shields.io/badge/python-3.11+-green)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 ![Stack](https://img.shields.io/badge/stack-100%25%20gratis-success)
-![Deploy](https://img.shields.io/badge/Databricks%20Free%20Edition-validated-blue)
+![Deploy](https://img.shields.io/badge/Databricks%20Vector%20Search-optional-blue)
 ![CI](https://github.com/franco18min/rag-docs/actions/workflows/ci.yml/badge.svg)
 
 ![Streamlit demo: query "¿Qué garantías ACID ofrece Delta Lake?" with full citation-backed response](docs/img/streamlit-demo.jpg)
@@ -15,17 +15,17 @@
 
 ## ¿Por qué este proyecto?
 
-Sistema RAG production-grade sobre documentación técnica con búsqueda híbrida, re-ranking y evaluación sistemática. Demuestra:
+MVP evaluado sobre documentación técnica con búsqueda híbrida, re-ranking opt-in y evaluación light. Demuestra:
 
 - Diseño de pipelines de ingestión (transferible desde data engineering)
-- **Búsqueda híbrida** (BM25 + vector denso) con RRF y re-ranking cross-encoder
-- **Ablation study** que justifica cada decisión arquitectónica
-- **Evaluación sistemática** (20 Q&A con `expected_source`; camino soportado: `evaluate_light.py`)
+- **Búsqueda híbrida** (BM25 + vector denso) con RRF; cross-encoder rerank **opt-in** (`ENABLE_RERANK`, default off)
+- **Ablation study** con métricas honestas (n chico; hybrid no “gana” en este corpus)
+- **Evaluación sistemática** (20 Q&A con `expected_source`; camino soportado: `evaluate_light.py`; RAGAS full **no soportado**)
 - **5 ADRs** documentando decisiones técnicas
 - **CI** con GitHub Actions (lint + mypy + tests)
-- **Backend vendor-agnostic**: Chroma (local) ↔ Databricks Vector Search (prod)
-- **Deploy validado end-to-end** en Databricks Free Edition
+- **Backend**: Chroma (local) y Databricks Vector Search (opcional). **No hay pgvector** en este repo
 - **Costo de inferencia: USD 0** (Gemini Flash-Lite free tier)
+- **Langfuse no implementado**
 
 Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deploy, ver:
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — decisiones técnicas y trade-offs
@@ -57,7 +57,7 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
        │ 3. Query
        ▼
 ┌──────────────┐
-│  Re-ranker   │  Cross-encoder (BGE-reranker-base) top-20 → top-5
+│  Re-ranker   │  Opt-in (ENABLE_RERANK). BGE-reranker-base top-20 → top-5
 └──────┬───────┘
        │ 4. Generation
        ▼
@@ -79,13 +79,13 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 | **LLM** | Google Gemini 2.0 Flash (free tier: 1,500 req/día) | $0 |
 | **Embeddings** | HuggingFace `BAAI/bge-m3` (local, 1024-dim, multilingüe) | $0 |
 | **Re-ranker** | HuggingFace `BAAI/bge-reranker-base` (local) | $0 |
-| **Vector DB** | Chroma (persistent local) → pgvector (migración futura) | $0 |
+| **Vector DB** | Chroma (local) / Databricks Vector Search (opcional) | $0 |
 | **Keyword search** | rank-bm25 (local, persistido a disco) | $0 |
 | **Backend** | FastAPI + Uvicorn | $0 |
 | **Frontend demo** | Streamlit | $0 |
 | **Chunking** | tiktoken (cl100k_base) | $0 |
 | **Evaluation** | `evaluate_light.py` (LLM-as-judge); full RAGAS no soportado | $0 |
-| **Observability** | Interface lista para Langfuse (instrumentación opcional) | $0 |
+| **Observability** | Langfuse **no implementado** (`trace_id` siempre `None`) | $0 |
 | **Deploy** | Docker + Docker Compose | $0 |
 
 **Costo total para construir + demostrar: USD 0**
@@ -230,7 +230,7 @@ rag-docs/
 │   │   ├── query.py               # QueryRequest, IngestRequest
 │   │   └── response.py            # QueryResponse, Citation, HealthResponse
 │   │
-│   └── observability/             # Langfuse integration (stub por ahora)
+│   └── observability/             # Paquete vacío; Langfuse no implementado
 │       └── __init__.py
 │
 ├── scripts/                       # Scripts CLI
@@ -282,7 +282,7 @@ rag-docs/
 - [x] Búsqueda vector con Chroma (cosine, persistent)
 - [x] Búsqueda BM25 con rank-bm25 (persistido a disco)
 - [x] Búsqueda híbrida con RRF (k=60)
-- [x] Re-ranking con cross-encoder BGE-reranker-base
+- [x] Re-ranking opt-in con cross-encoder BGE-reranker-base (default off)
 - [x] Generación con Gemini 2.0 Flash + prompt estructurado
 - [x] Citas a las fuentes con score
 - [x] API REST con FastAPI (health, collections, query, ingest)

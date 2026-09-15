@@ -15,7 +15,7 @@ A visual overview of the system. Two parts:
 
   Doc → Chunk → Embed ──┐              ┌──▶  Vector Search ──┐
                         │              │                     │
-                        ├──────────────┤   hybrid con BM25   ├──▶ Rerank ──▶ LLM ──▶ Answer
+                        ├──────────────┤   hybrid con BM25   ├──▶ Rerank?──▶ LLM ──▶ Answer
                         │              │                     │    (cross-    (Gemini    + Citations
                         │              └──▶  BM25 keyword ──┘    encoder)    Flash)
                         ▼
@@ -108,7 +108,7 @@ flowchart TB
     subgraph online["Online: query (per question)"]
         E[Question] --> F[Embed query<br/>same BGE-M3]
         F --> G[Vector Search<br/>top-K by cosine]
-        G --> H[Reranker<br/>BGE-reranker cross-encoder]
+        G --> H[Reranker opt-in<br/>BGE-reranker cross-encoder]
         H --> I[LLM<br/>Gemini Flash-Lite]
         I --> J[Answer + Citations]
     end
@@ -133,7 +133,7 @@ When explaining RAG to a non-technical recruiter or peer, use the **high-level**
 
 For an AI engineer interview, add:
 - "We use hybrid search (BM25 + vector) fused with RRF because vector fails on exact keywords."
-- "We re-rank with a cross-encoder because pure vector misses nuance."
+- "Cross-encoder rerank is opt-in (`ENABLE_RERANK`); default is off after ablation on this corpus."
 - "We picked BGE-M3 for multilingual support and on-prem deployment."
 - "We split the project into Chroma (dev) and Databricks (prod) backends behind a single interface."
 

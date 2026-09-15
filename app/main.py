@@ -43,7 +43,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -64,24 +64,12 @@ def get_pipeline() -> RAGPipeline:
 # ---- Endpoints ----
 @app.get("/health", response_model=HealthResponse)
 async def health():
-    try:
-        pipeline = get_pipeline()
-        collections = pipeline.collections()
-    except Exception:
-        logger.exception("Health check failed")
-        return HealthResponse(
-            status="degraded",
-            version=__version__,
-            model=settings.gemini_model,
-            collections=[],
-            embedding_model=settings.embedding_model,
-            reranker_model=settings.reranker_model,
-        )
+    """Liveness only: does not load embedder, reranker, or vector stores."""
     return HealthResponse(
         status="ok",
         version=__version__,
         model=settings.gemini_model,
-        collections=collections,
+        collections=[],
         embedding_model=settings.embedding_model,
         reranker_model=settings.reranker_model,
     )
@@ -116,7 +104,7 @@ async def query(request: QueryRequest):
         return QueryResponse(
             answer=result["answer"],
             citations=citations,
-            trace_id=None,  # Langfuse integration is optional; filled in observability/tracing.py
+            trace_id=None,
             latency_ms=result["latency_ms"],
             model=result["model"],
             collection=result["collection"],

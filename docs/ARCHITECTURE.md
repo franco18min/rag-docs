@@ -26,7 +26,7 @@ quality, cost, and maintainability.
               ┌─────────────────────┐
               │  RRF fusion         │  Reciprocal Rank Fusion, k=60
               └──────────┬──────────┘
-                         │ 4. Rerank (BGE-reranker, top-20 → top-5)
+                         │ 4. Rerank (opt-in; BGE-reranker, top-20 → top-5)
                          ▼
               ┌─────────────────────┐
               │  Gemini 2.0 Flash   │  Grounded answer with [#N] citations
@@ -58,7 +58,7 @@ rrf(d) = Σ_r 1 / (k + rank_r(d))
 We use `k=60` (the value from the original Cormack et al. SIGIR 2009 paper).
 
 **Trade-off**: two retrievers means two indexes and more memory. For our
-50–300 document corpora this is negligible. At 10M+ chunks, you'd consolidate
+demo-scale corpora this is negligible. At 10M+ chunks, you'd consolidate
 into a single dense index + keyword filter or move to a hybrid-native engine
 like Weaviate or Qdrant.
 
@@ -73,10 +73,13 @@ relevance score. They're ~10x more accurate on the top of the ranking, but
 ~100x slower — so we only apply them to the top-20 from hybrid, output
 top-5.
 
-**Empirical impact** (from the BGE reranker paper and our internal tests):
-+20–30% on nDCG@10 vs pure dense retrieval.
+Published BGE reranker papers report large nDCG gains on public IR
+benchmarks. **This repo does not claim a +20–30% nDCG lift** on the demo
+corpus. Local ablation on 20 Q&A showed Hit@1 dropping with rerank and
+~50× latency on CPU. Default: `ENABLE_RERANK=false`.
 
-**Trade-off**: +200ms latency per query on CPU. Worth it.
+**Trade-off**: rerank is opt-in; enable only when the corpus and latency
+budget justify loading the cross-encoder.
 
 ### 3. Sliding window 512/64
 
@@ -95,7 +98,7 @@ top-5.
 - **Sentence-based splitting** (NLTK, spacy) — but our docs mix Spanish and
   English and have lots of code blocks, which mess up sentence detection.
 - **Semantic chunking** (split when embedding similarity drops) — too slow at
-  ingest for our 50–300 doc corpus, and not noticeably better in practice.
+  ingest for this demo corpus, and not noticeably better in practice.
 
 ### 4. BGE-M3 (multilingual, long-context)
 
@@ -122,21 +125,19 @@ For 300 documents × 5 chunks each = 1500 chunks, ingest is ~1.5 minutes.
   (avoids hallucination)
 - Low temperature (0.2) for grounded, deterministic answers
 
-### 6. Chroma → pgvector migration path
+### 6. Chroma (dev) and Databricks Vector Search (optional)
 
 **Why Chroma for the MVP?**
 - Zero ops, runs in-process, persists to disk
-- Same API as production vector DBs (add, query, delete_collection)
+- Thin `VectorStore` interface shared with the Databricks adapter
 - Lets us focus on the pipeline, not infrastructure
 
-**Migration trigger**:
-- Corpus > 100K chunks
-- Need for multi-user concurrent writes
-- Need for server-side filtering on metadata at scale
-- Need for replicas and backups
+**Current path:** `VECTOR_STORE_BACKEND=chroma` (default) or `databricks`.
+There is **no pgvector backend** in this repo.
 
-The `VectorStore` interface is intentionally thin so this swap is a
-~100-line change.
+**When Databricks is useful**:
+- Demo against Unity Catalog / Vector Search
+- Need for a remote index instead of local Chroma files
 
 ## What's intentionally NOT here (yet)
 
@@ -146,10 +147,10 @@ The `VectorStore` interface is intentionally thin so this swap is a
   query reformulation step + history-aware retriever.
 - **Caching of common queries**: a Redis layer in front of `/query` would
   cut latency to ~10ms for hot queries.
-- **A/B testing of prompts**: the prompt is in `generator.py`; structured so
-  we can swap templates and measure RAGAS delta.
-- **Langfuse tracing**: stub interface (`trace_id` field) is in place; the
-  actual instrumentation is in `app/observability/tracing.py` (TODO).
+- **A/B testing of prompts**: the prompt is in `generator.py`.
+- **Langfuse / distributed tracing**: not implemented. `QueryResponse.trace_id`
+  is always `None`.
+- **Full RAGAS**: not supported; use `scripts/evaluate_light.py`.
 
 ## Component dependency graph
 

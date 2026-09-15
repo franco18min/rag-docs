@@ -7,10 +7,11 @@ Aceptado condicionalmente (2026-08-26)
 Después del retrieval híbrido, los top-K (default 20) candidatos se re-rankean con un cross-encoder (BGE-reranker-base) que codifica `(query, document)` juntos en una sola pasada. Esto captura matices que el bi-encoder (BGE-M3) pierde.
 
 ## Decisión
-**Rerank incluido en el pipeline, pero opt-in por configuración.**
+**Rerank incluido en el pipeline, pero opt-in (`ENABLE_RERANK` default `False`).**
 
 ```python
-# Habilitar rerank (default True)
+# Habilitar rerank (default off)
+ENABLE_RERANK=true
 TOP_K_RERANK=5
 RERANKER_MODEL=BAAI/bge-reranker-base
 ```
