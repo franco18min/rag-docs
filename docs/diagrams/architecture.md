@@ -10,20 +10,20 @@ Vista visual del sistema. Dos partes:
                           RAG: dos fases, un store
                           ========================
 
-  OFFLINE (una vez)                   ONLINE (cada pregunta)
+  FUERA DE LÍNEA (una vez)            EN LÍNEA (cada pregunta)
   =================                   ====================
 
   Doc → Chunk → Embed ──┐              ┌──▶  Vector Search ──┐
                         │              │                     │
-                        ├──────────────┤   hybrid con BM25   ├──▶ Rerank?──▶ LLM ──▶ Answer
-                        │              │                     │    (cross-    (Gemini    + Citations
+                        ├──────────────┤   híbrido con BM25  ├──▶ Rerank?──▶ LLM ──▶ Respuesta
+                        │              │                     │    (cross-    (Gemini    + Citas
                         │              └──▶  BM25 keyword ──┘    encoder)    Flash-Lite)
                         ▼
                   [Vector Store]
                   Chroma | Databricks VS
 ```
 
-**Idea clave:** los mismos datos (chunks + embeddings) se usan para escribir (offline) y para buscar (online). La pipeline se monta sobre ese store compartido.
+**Idea clave:** los mismos datos (chunks + embeddings) se usan para escribir (fuera de línea) y para buscar (en línea). La pipeline se monta sobre ese store compartido.
 
 ## Detalle: cada caja
 
@@ -31,7 +31,7 @@ Vista visual del sistema. Dos partes:
                   RAG: Retrieval-Augmented Generation
                   =====================================
 
-  ┌──────────────────── OFFLINE (una vez) ─────────────────────┐
+  ┌──────────────────── FUERA DE LÍNEA (una vez) ──────────────┐
   │                                                             │
   │   ┌──────────┐   ┌──────────┐   ┌──────────┐               │
   │   │Documentos│──▶│ Chunker  │──▶│ Embedder │               │
@@ -45,7 +45,7 @@ Vista visual del sistema. Dos partes:
   │                          │    Vector Store      │           │
   │                          │                      │           │
   │                          │  dev: Chroma         │           │
-  │                          │       (in-process)   │           │
+  │                          │       (en proceso)   │           │
   │                          │                      │           │
   │                          │  prod: Databricks    │           │
   │                          │       Vector Search  │           │
@@ -55,7 +55,7 @@ Vista visual del sistema. Dos partes:
   │                                     │                       │
   └─────────────────────────────────────┼───────────────────────┘
                                         │
-  ┌──────────────────── ONLINE (por query) ─┼──────────────┐
+  ┌──────────────────── EN LÍNEA (por query) ─┼──────────────┐
   │                                     │               │
   │   ┌──────────┐                     │               │
   │   │ Pregunta │                     │               │
@@ -71,7 +71,7 @@ Vista visual del sistema. Dos partes:
   │   ┌────────────────────────────────┘               │
   │   │  Vector Search (cosine top-K)  ◀── lee el índice
   │   │           +  BM25 keyword
-  │   │           =  RRF fusion
+  │   │           =  fusión RRF
   │   └────────────┬───────────────────┘
   │                │
   │                ▼
@@ -99,13 +99,13 @@ Vista visual del sistema. Dos partes:
 
 ```mermaid
 flowchart TB
-    subgraph offline["Offline: ingestión (una vez)"]
+    subgraph offline["Fuera de línea: ingestión (una vez)"]
         A[Documentos<br/>PDF/MD/HTML/TXT] --> B[Chunker<br/>512 tok + 64 overlap]
         B --> C[Embedder<br/>BGE-M3 1024-dim]
         C --> D[Vector Store<br/>Chroma o Databricks VS]
     end
 
-    subgraph online["Online: query (por pregunta)"]
+    subgraph online["En línea: query (por pregunta)"]
         E[Pregunta] --> F[Embed query<br/>mismo BGE-M3]
         F --> G[Vector Search<br/>top-K por cosine]
         G --> H[Reranker opt-in<br/>BGE-reranker cross-encoder]
@@ -115,7 +115,7 @@ flowchart TB
 
     D -. índice compartido .-> G
 
-    K[BM25<br/>keyword search] --> G
+    K[BM25<br/>búsqueda keyword] --> G
 
     style D fill:#fff4cc,stroke:#333
     style J fill:#d4f4dd,stroke:#333

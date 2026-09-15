@@ -24,7 +24,7 @@ calidad, costo y mantenibilidad.
                          │ 3. Retrieval híbrido (top-20 cada uno)
                          ▼
               ┌─────────────────────┐
-              │  RRF fusion         │  Reciprocal Rank Fusion, k=60
+              │  Fusión RRF         │  Reciprocal Rank Fusion, k=60
               └──────────┬──────────┘
                          │ 4. Rerank (opt-in; BGE-reranker, top-20 → top-5)
                          ▼
@@ -136,7 +136,7 @@ Id de modelo por default: `gemini-flash-lite-latest`.
 ### 6. Chroma (dev) y Databricks Vector Search (opcional)
 
 **¿Por qué Chroma para el MVP?**
-- Cero ops, corre in-process, persiste a disco
+- Cero ops, corre en el mismo proceso, persiste a disco
 - Interfaz delgada `VectorStore` compartida con el adapter de Databricks
 - Permite enfocarnos en el pipeline, no en infraestructura
 

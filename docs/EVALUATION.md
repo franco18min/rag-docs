@@ -80,20 +80,20 @@ sobre preguntas sintéticas).
 | Alto | Alto | Bajo | Alto | Chunking / hechos faltantes |
 | Bajo | Bajo | Bajo | Bajo | Desajuste de corpus, modelo o chunking |
 
-Ablation Hit@K / MRR en esta demo: **hybrid ≈ vector**. El rerank puede
+Ablación Hit@K / MRR en esta demo: **hybrid ≈ vector**. El rerank puede
 bajar Hit@1 y sumar latencia. Ver las tablas del README; no trates una
 corrida como ranking de arquitecturas.
 
 ## Cómo correrlo (soportado)
 
 ```bash
-# Set curado a mano (preferido; incluye expected_source)
+# Conjunto curado a mano (preferido; incluye expected_source)
 # data/eval/qa_set.json ya está poblado para el corpus de sample
 
 # Evaluación light (camino soportado)
 python scripts/evaluate_light.py
 
-# Ablation de retrieval (Hit@K / MRR desde expected_source)
+# Ablación de retrieval (Hit@K / MRR desde expected_source)
 python scripts/ablation.py --eval-set data/eval/qa_set.json
 ```
 

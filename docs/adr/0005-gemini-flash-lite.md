@@ -23,10 +23,10 @@ El generador del RAG toma el top-K de chunks y produce la respuesta. Opciones ev
 4. **Sin GPU en el cliente**: a diferencia de Llama, no requiere infra. Es HTTP.
 5. **Latencia baja**: 1-2s para respuestas de 200 tokens. Aceptable para UX.
 
-## Gotcha: modelos deprecados para usuarios nuevos (agosto 2026)
+## Cuidado: modelos deprecados para usuarios nuevos (agosto 2026)
 Al crear una API key nueva, los modelos explícitos (`gemini-2.0-flash`, `gemini-2.5-flash-lite`) devuelven **404 "no longer available to new users"**. Solo los aliases `-latest` funcionan. Esto fue una decisión de Google en 2026-Q3.
 
-## Gotcha: `gemini-flash-latest` consume quota rápido
+## Cuidado: `gemini-flash-latest` consume quota rápido
 El alias `gemini-flash-latest` apunta al Flash "full" (no Lite). En una key free, 4-5 calls pueden agotar la quota del día (1/4 por call). Para portfolio se usa `-flash-lite-latest` por default.
 
 ## Consecuencias

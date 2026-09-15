@@ -10,7 +10,7 @@ Después del retrieval híbrido, los top-K (default 20) candidatos se re-rankean
 **Rerank incluido en el pipeline, pero opt-in (`ENABLE_RERANK` default `False`).**
 
 ```python
-# Habilitar rerank (default off)
+# Habilitar rerank (desactivado por defecto)
 ENABLE_RERANK=true
 TOP_K_RERANK=5
 RERANKER_MODEL=BAAI/bge-reranker-base
@@ -21,7 +21,7 @@ RERANKER_MODEL=BAAI/bge-reranker-base
 2. **Re-ranking con negaciones**: bi-encoder no modela bien "no es X" vs "es X".
 3. **Estado del arte en MS MARCO**: BGE-reranker-base logra MRR@10 = 0.365 en MS MARCO, comparable a modelos 10x más grandes.
 
-## Ablation
+## Ablación
 Ver `scripts/ablation.py`. Para nuestro corpus de 18 chunks:
 
 | Configuración | Hit@1 | Hit@3 | Latencia |

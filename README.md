@@ -19,7 +19,7 @@ MVP evaluado sobre documentación técnica con búsqueda híbrida, re-ranking op
 
 - Diseño de pipelines de ingestión (transferible desde data engineering)
 - **Búsqueda híbrida** (BM25 + vector denso) con RRF; cross-encoder rerank **opt-in** (`ENABLE_RERANK`, default off)
-- **Ablation study** con métricas honestas (n chico; hybrid no “gana” en este corpus)
+- **Estudio de ablación** con métricas honestas (n chico; hybrid no “gana” en este corpus)
 - **Evaluación sistemática** (20 Q&A con `expected_source`; camino soportado: `evaluate_light.py`; RAGAS full **no soportado**)
 - **5 ADRs** documentando decisiones técnicas
 - **CI** con GitHub Actions (lint + mypy + tests)
@@ -28,7 +28,7 @@ MVP evaluado sobre documentación técnica con búsqueda híbrida, re-ranking op
 - **Langfuse no implementado**
 
 Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deploy, ver:
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — decisiones técnicas y trade-offs
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — decisiones técnicas y compromisos
 - [`docs/EVALUATION.md`](docs/EVALUATION.md) — cómo interpretar las métricas
 - [`docs/DEPLOY_DATABRICKS.md`](docs/DEPLOY_DATABRICKS.md) — setup Free Edition, gotchas y cleanup
 - [`docs/adr/`](docs/adr/README.md) — 5 Architecture Decision Records
@@ -57,15 +57,15 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
        │ 3. Query
        ▼
 ┌──────────────┐
-│  Re-ranker   │  Opt-in (ENABLE_RERANK). BGE-reranker-base top-20 → top-5
+│  Re-ranker   │  Opcional (ENABLE_RERANK). BGE-reranker-base top-20 → top-5
 └──────┬───────┘
-       │ 4. Generation
+       │ 4. Generación
        ▼
 ┌──────────────┐
 │  LLM (Gemini │  Gemini Flash-Lite (gemini-flash-lite-latest)
 │  Flash-Lite) │  + citas [#N] obligatorias
 └──────┬───────┘
-       │ 5. Response
+       │ 5. Respuesta
        ▼
    {answer, citations, scores, latency_ms, model}
 ```
@@ -94,7 +94,7 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 
 ## Arranque rápido (10 minutos al primer query)
 
-### 1. Setup
+### 1. Configuración
 
 **Unix / macOS**
 
@@ -189,7 +189,7 @@ cp data/eval/qa_set_template.json data/eval/qa_set.json
 # Camino soportado (1 LLM call/Q). Full RAGAS (`scripts/evaluate.py`) no está soportado aquí.
 python -m scripts.evaluate_light
 
-# Ablation Hit@K / MRR (usa expected_source, no heurística de texto)
+# Ablación Hit@K / MRR (usa expected_source, no heurística de texto)
 python scripts.ablation.py --eval-set data/eval/qa_set.json
 ```
 
@@ -305,7 +305,7 @@ rag-docs/
 
 Números de una corrida sobre el corpus de demo (`data/sample/`, 8 markdowns, ~18–247 chunks según ingest). **No generalizan** a un corpus de 50–100 documentos.
 
-### Ablation (Hit@K / MRR)
+### Ablación (Hit@K / MRR)
 
 Las 3 configuraciones sobre 20 Q&A con `expected_source`. En este n chico, **hybrid ≈ vector** (mismos Hit@K / MRR). Eso no implica que hybrid “gane”.
 

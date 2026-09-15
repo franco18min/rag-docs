@@ -1,6 +1,6 @@
 # ADRs (registros de decisión de arquitectura)
 
-Decisiones de diseño documentadas con su contexto, opciones consideradas y trade-offs.
+Decisiones de diseño documentadas con su contexto, opciones consideradas y compromisos.
 
 | # | Decisión | Estado |
 |---|----------|--------|
@@ -13,11 +13,11 @@ Decisiones de diseño documentadas con su contexto, opciones consideradas y trad
 ## Formato
 
 Cada ADR sigue el formato de Michael Nygard:
-- **Estado**: Aceptado / Propuesto / Deprecado / Superseded
+- **Estado**: Aceptado / Propuesto / Deprecado / Reemplazado
 - **Contexto**: el problema a resolver
 - **Decisión**: lo que hicimos
 - **Razones**: por qué
-- **Consecuencias**: trade-offs y mitigaciones
+- **Consecuencias**: compromisos y mitigaciones
 - **Cuándo reconsiderar**: señales de que la decisión debe revisarse
 
-Las ADRs son inmutables una vez aceptadas. Si una decisión cambia, se escribe una nueva ADR que la reemplaza (marcando la anterior como "Superseded").
+Las ADRs son inmutables una vez aceptadas. Si una decisión cambia, se escribe una nueva ADR que la reemplaza (marcando la anterior como "Reemplazado").

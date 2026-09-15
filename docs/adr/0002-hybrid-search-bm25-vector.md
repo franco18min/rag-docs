@@ -26,7 +26,7 @@ donde `k=60` (default Cormack et al. SIGIR 2009).
 3. **Bien estudiado**: paper de Cormack et al. en SIGIR 2009 muestra que RRF supera a métodos más complejos de rank aggregation.
 4. **Costo bajo**: BM25 es CPU-only y <10ms por query. El costo agregado es despreciable.
 
-## Ablation
+## Ablación
 Ver `scripts/ablation.py` con 20 Q&A del corpus. Resultados sobre 18 chunks (corpus pequeño):
 
 | Configuración | Hit@1 | Hit@3 | Hit@5 | Latencia |

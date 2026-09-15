@@ -178,7 +178,7 @@ print(result["answer"])
 print(result["citations"])
 ```
 
-## Gotchas que aprendimos en producción
+## Problemas que aprendimos en producción
 
 ### 1. Nombres del SDK: `AISearchClient`, no `VectorSearchClient`
 
@@ -310,7 +310,7 @@ from app.core.vector_store_databricks import DatabricksVectorStore
 ingest + `evaluate_light.py` + smoke test. Después, cleanup. RAGAS full
 no está soportado.
 
-## Cleanup (importante — no dejar prendido)
+## Limpieza (importante — no dejar prendido)
 
 ```python
 # 1. Borrar el index
