@@ -34,7 +34,7 @@ el contexto (no es el pipeline oficial de descomposición de RAGAS).
 - Chunks de baja calidad en el contexto
 - Los límites de chunk parten contexto importante a la mitad
 
-**Fixes**:
+**Correcciones**:
 - Bajar la temperatura del generador
 - Agregar instrucciones explícitas de "responder SOLO desde el contexto"
 - Subir el overlap en el chunker
@@ -87,13 +87,13 @@ corrida como ranking de arquitecturas.
 ## Cómo correrlo (soportado)
 
 ```bash
-# Hand-curated set (preferred; has expected_source)
-# data/eval/qa_set.json is already populated for the sample corpus
+# Set curado a mano (preferido; incluye expected_source)
+# data/eval/qa_set.json ya está poblado para el corpus de sample
 
-# Light evaluation (supported)
+# Evaluación light (camino soportado)
 python scripts/evaluate_light.py
 
-# Retrieval ablation (Hit@K / MRR from expected_source)
+# Ablation de retrieval (Hit@K / MRR desde expected_source)
 python scripts/ablation.py --eval-set data/eval/qa_set.json
 ```
 
@@ -125,4 +125,4 @@ python -m scripts.evaluate \
 
 - Después de cambiar chunking, embeddings, retriever, rerank o prompt
 - Diff contra el baseline anterior sobre el **mismo** eval set
-- Si algunas métricas suben y otras bajan, es un trade-off de producto
+- Si algunas métricas suben y otras bajan, es un compromiso de producto

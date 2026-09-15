@@ -1,6 +1,6 @@
 # Arquitectura y decisiones técnicas
 
-Este documento explica *por qué* el sistema está armado así: trade-offs
+Este documento explica *por qué* el sistema está armado así: compromisos
 considerados, alternativas descartadas y elecciones de diseño que afectan
 calidad, costo y mantenibilidad.
 
@@ -10,7 +10,7 @@ calidad, costo y mantenibilidad.
                    ┌─────────────┐
                    │  Documentos │  PDF / Markdown / HTML / TXT
                    └──────┬──────┘
-                          │ 1. Load (readers por formato)
+                          │ 1. Carga (readers por formato)
                           ▼
                    ┌─────────────┐
                    │  Chunking   │  tiktoken, sliding window 512/64
@@ -31,7 +31,7 @@ calidad, costo y mantenibilidad.
               ┌─────────────────────┐
               │  Gemini Flash-Lite  │  Respuesta grounded con citas [#N]
               └──────────┬──────────┘
-                         │ 5. Response (answer + citations + scores)
+                         │ 5. Respuesta (answer + citations + scores)
                          ▼
                     {answer, citations, latency_ms, model}
 ```
@@ -58,7 +58,7 @@ rrf(d) = Σ_r 1 / (k + rank_r(d))
 ```
 Usamos `k=60` (el valor del paper original de Cormack et al., SIGIR 2009).
 
-**Trade-off**: dos retrievers implican dos índices y más memoria. A escala
+**Compromiso**: dos retrievers implican dos índices y más memoria. A escala
 de demo es despreciable. Con 10M+ chunks conviene consolidar en un índice
 denso + filtro de keywords, o pasar a un motor híbrido nativo como
 Weaviate o Qdrant.
@@ -80,7 +80,7 @@ nDCG** sobre el corpus de demo. La ablation local en 20 Q&A mostró que
 Hit@1 baja con rerank y ~50× de latencia en CPU. Default:
 `ENABLE_RERANK=false`.
 
-**Trade-off**: el rerank es opt-in; habilitalo solo cuando el corpus y el
+**Compromiso**: el rerank es opt-in; habilitalo solo cuando el corpus y el
 presupuesto de latencia justifiquen cargar el cross-encoder.
 
 ### 3. Sliding window 512/64
@@ -113,7 +113,7 @@ presupuesto de latencia justifiquen cargar el cross-encoder.
 - Multilingüe (100+ idiomas, fuerte en español) — importante para nuestro caso
 - Contexto largo (8K tokens) → se puede re-embeddear un chunk sin truncar
 
-**Trade-off**: ~400MB de descarga, ~1GB de RAM, ~50ms por chunk en CPU.
+**Compromiso**: ~400MB de descarga, ~1GB de RAM, ~50ms por chunk en CPU.
 Para 300 documentos × 5 chunks = 1500 chunks, el ingest lleva ~1.5 minutos.
 
 ### 5. Gemini Flash-Lite para generación
@@ -165,13 +165,13 @@ Id de modelo por default: `gemini-flash-lite-latest`.
 
 ```
 pipeline.py
-├── chunker.py          (depends on: config, tiktoken)
-├── embedder.py         (depends on: config, sentence-transformers)
-├── vector_store.py     (depends on: config, chromadb)
-├── bm25_store.py       (depends on: config, rank_bm25)
-├── hybrid_search.py    (depends on: config, vector_store, bm25_store)
-├── reranker.py         (depends on: config, sentence-transformers CrossEncoder)
-└── generator.py        (depends on: config, google-generativeai)
+├── chunker.py          (usa: config, tiktoken)
+├── embedder.py         (usa: config, sentence-transformers)
+├── vector_store.py     (usa: config, chromadb)
+├── bm25_store.py       (usa: config, rank_bm25)
+├── hybrid_search.py    (usa: config, vector_store, bm25_store)
+├── reranker.py         (usa: config, sentence-transformers CrossEncoder)
+└── generator.py        (usa: config, google-generativeai)
 ```
 
 Cada módulo de core se puede importar y testear por separado. El pipeline

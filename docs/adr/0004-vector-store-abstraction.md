@@ -30,7 +30,7 @@ def get_vector_store():
 4. **Amigable para tests**: los tests usan Chroma (in-memory) sin credenciales de Databricks.
 5. **Costo cero en dev**: Chroma corre sin servicios externos.
 
-## Trade-offs
+## Compromisos
 - **Costo de mantener dos adapters**: ~200 líneas de código duplicado. Aceptable porque los backends son estables.
 - **Tests deben correr contra ambos**: el smoke test corre contra Databricks; los pytest unitarios contra Chroma.
 - **Data migration**: si cambias de backend, hay que re-ingestar. Aceptable porque ingest es 5-10 min.

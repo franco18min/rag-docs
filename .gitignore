@@ -48,6 +48,9 @@ data/install.log
 # ===== Personal notes (kept locally, not part of the portfolio repo) =====
 .private/
 
+# ===== Agent SDD specs (local only; not part of the public repo) =====
+specs/
+
 # ===== Temp / scratch scripts (kept locally, not in repo) =====
 scripts/_*.py
 _*.log

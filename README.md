@@ -211,8 +211,8 @@ rag-docs/
 ├── .env.example                   # Template de variables de entorno
 ├── .gitignore
 ├── LICENSE                        # MIT
-├── Dockerfile                     # Para deploy
-├── docker-compose.yml             # API + Streamlit
+├── Dockerfile                     # Imagen local (API)
+├── docker-compose.yml             # API + Streamlit en local
 ├── .github/
 │   └── workflows/ci.yml           # GitHub Actions: lint + mypy + tests
 │
@@ -259,22 +259,20 @@ rag-docs/
 │       ├── qa_set_template.json   # 5 Q&A starter
 │       └── results.json           # (generado por evaluate.py)
 │
-├── tests/                         # Tests (pytest, 11 tests, ~9s)
+├── tests/                         # Tests (pytest)
 │   ├── test_chunker.py
 │   ├── test_hybrid_search.py
-│   └── test_pipeline_query.py
+│   ├── test_pipeline_query.py
+│   └── …
 │
-└── docs/                          # Documentación
-    ├── ARCHITECTURE.md            # Decisiones técnicas detalladas
+└── docs/                          # Documentación (español; términos técnicos en inglés)
+    ├── ARCHITECTURE.md            # Decisiones técnicas
     ├── EVALUATION.md              # Cómo interpretar métricas
-    ├── DEPLOY_DATABRICKS.md       # Setup Free Edition, gotchas y cleanup
+    ├── DEPLOY_DATABRICKS.md       # Vector Search en Free Edition
+    ├── diagrams/architecture.md   # Diagramas
     ├── adr/                       # Architecture Decision Records
     │   ├── README.md
-    │   ├── 0001-bge-m3-embedding-model.md
-    │   ├── 0002-hybrid-search-bm25-vector.md
-    │   ├── 0003-rerank-cross-encoder.md
-    │   ├── 0004-vector-store-abstraction.md
-    │   └── 0005-gemini-flash-lite.md
+    │   └── 0001–0005-*.md
     └── img/
         └── streamlit-demo.jpg
 ```

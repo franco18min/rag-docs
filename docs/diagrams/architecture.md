@@ -34,10 +34,10 @@ Vista visual del sistema. Dos partes:
   ┌──────────────────── OFFLINE (una vez) ─────────────────────┐
   │                                                             │
   │   ┌──────────┐   ┌──────────┐   ┌──────────┐               │
-  │   │Documents │──▶│ Chunker  │──▶│ Embedder │               │
+  │   │Documentos│──▶│ Chunker  │──▶│ Embedder │               │
   │   │PDF/MD/   │   │ 512 tok  │   │ BGE-M3   │               │
   │   │HTML/TXT  │   │ 64 over- │   │ 1024-dim │               │
-  │   │          │   │ lap      │   │ per chunk│               │
+  │   │          │   │ lap      │   │ por chunk│               │
   │   └──────────┘   └──────────┘   └────┬─────┘               │
   │                                      │                      │
   │                                      ▼                      │
@@ -58,7 +58,7 @@ Vista visual del sistema. Dos partes:
   ┌──────────────────── ONLINE (por query) ─┼──────────────┐
   │                                     │               │
   │   ┌──────────┐                     │               │
-  │   │ Question │                     │               │
+  │   │ Pregunta │                     │               │
   │   └────┬─────┘                     │               │
   │        │                            │               │
   │        ▼                            │               │
@@ -83,13 +83,13 @@ Vista visual del sistema. Dos partes:
   │   ┌────────────────┐
   │   │      LLM       │  Gemini Flash-Lite
   │   │  + context    │  "Respondé SOLO con
-  │   │  + question   │   este contexto..."
+  │   │  + pregunta   │   este contexto..."
   │   └────────┬───────┘
   │            │
   │            ▼
   │   ┌────────────────┐
-  │   │  Answer +      │
-  │   │  Citations     │  (texto + paths de source)
+  │   │  Respuesta +   │
+  │   │  Citas         │  (texto + paths de source)
   │   └────────────────┘
   │
   └─────────────────────────────────────────────────────────┘
@@ -100,17 +100,17 @@ Vista visual del sistema. Dos partes:
 ```mermaid
 flowchart TB
     subgraph offline["Offline: ingestión (una vez)"]
-        A[Documents<br/>PDF/MD/HTML/TXT] --> B[Chunker<br/>512 tok + 64 overlap]
+        A[Documentos<br/>PDF/MD/HTML/TXT] --> B[Chunker<br/>512 tok + 64 overlap]
         B --> C[Embedder<br/>BGE-M3 1024-dim]
-        C --> D[Vector Store<br/>Chroma or Databricks VS]
+        C --> D[Vector Store<br/>Chroma o Databricks VS]
     end
 
     subgraph online["Online: query (por pregunta)"]
-        E[Question] --> F[Embed query<br/>mismo BGE-M3]
-        F --> G[Vector Search<br/>top-K by cosine]
+        E[Pregunta] --> F[Embed query<br/>mismo BGE-M3]
+        F --> G[Vector Search<br/>top-K por cosine]
         G --> H[Reranker opt-in<br/>BGE-reranker cross-encoder]
         H --> I[LLM<br/>Gemini Flash-Lite]
-        I --> J[Answer + Citations]
+        I --> J[Respuesta + Citas]
     end
 
     D -. índice compartido .-> G
@@ -135,7 +135,7 @@ Cuando expliques RAG a un recruiter no técnico o a un par, usá el diagrama de
 Para una entrevista de ingeniería de AI, sumá:
 - "Usamos búsqueda híbrida (BM25 + vector) fusionada con RRF porque el vector falla en keywords exactas."
 - "El rerank con cross-encoder es opt-in (`ENABLE_RERANK`); el default es off después de la ablation en este corpus."
-- "Elegimos BGE-M3 por soporte multilingüe y deploy on-prem."
+- "Elegimos BGE-M3 por soporte multilingüe y para correrlo on-prem."
 - "Separamos Chroma (dev) y Databricks (prod) detrás de una sola interfaz."
 
 ## Ver también
