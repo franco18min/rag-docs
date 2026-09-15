@@ -2,26 +2,31 @@
   {
     "question": "¿Qué es Delta Lake y cuáles son sus principales garantías?",
     "ground_truth": "Delta Lake es una capa de almacenamiento open-source que trae transacciones ACID a Apache Spark y data lakes. Sus principales garantías son: atomicidad, consistencia, aislamiento y durabilidad (ACID) sobre archivos Parquet, lo que permite lecturas y escrituras confiables incluso ante fallos.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "delta_lake_intro.md"
   },
   {
     "question": "¿En qué se diferencian las capas Bronze, Silver y Gold de la arquitectura Medallion?",
     "ground_truth": "Bronze almacena datos crudos e inmutables tal como llegan de los sistemas fuente. Silver contiene datos limpios, deduplicados y enriquecidos con joins y reglas de negocio. Gold es la capa de agregación de negocio, optimizada para consumo analítico y reporting.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "medallion_architecture.md"
   },
   {
     "question": "¿Cómo funciona el Time Travel en Delta Lake?",
     "ground_truth": "Time Travel permite consultar o restaurar versiones anteriores de una tabla Delta usando el VERSION AS OF o TIMESTAMP AS OF en SQL. Internamente Delta mantiene un _delta_log con commits JSON, lo que habilita auditoría, reproducibilidad de experimentos y recuperación ante cargas erróneas.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "delta_time_travel.md"
   },
   {
     "question": "¿Qué ventajas tiene Structured Streaming sobre el streaming tradicional con DStreams?",
     "ground_truth": "Structured Streaming ofrece un modelo de programación basado en DataFrames/Datasets, exactamente igual al batch, lo que reduce código duplicado. Tiene mejor manejo de late data con watermarks, garantías exactly-once end-to-end cuando se combina con sinks idempotentes, y el optimizador Catalyst aplica mejoras automáticamente.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "structured_streaming.md"
   },
   {
     "question": "¿Cuándo conviene usar cache() vs persist() en Spark?",
     "ground_truth": "cache() usa el nivel de storage MEMORY_AND_DISK por defecto y es un alias de persist(). persist() te permite elegir el StorageLevel explícitamente (MEMORY_ONLY, DISK_ONLY, MEMORY_AND_DISK_2, etc.). Conviene persistir con replicación cuando el recompute es caro, y usar MEMORY_ONLY solo si el dataset entra cómodo en RAM.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "spark_persistence.md"
   }
 ]

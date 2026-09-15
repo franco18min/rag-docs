@@ -16,6 +16,7 @@ Design notes:
     - The ``list_collections`` / ``delete_collection`` methods map to
       index lifecycle on the Vector Search endpoint.
 """
+
 from __future__ import annotations
 
 import logging
@@ -265,7 +266,8 @@ class DatabricksVectorStore:
         # Search index on top of it if it doesn't exist yet. The index
         # creation is idempotent (returns the existing one if already there).
         self.create_index_from_table(
-            collection=collection, embedding_dim=embedding_dim,
+            collection=collection,
+            embedding_dim=embedding_dim,
         )
 
         table = self._table_name(collection)
@@ -357,6 +359,7 @@ class DatabricksVectorStore:
         filters_json = None
         if where:
             import json as _json
+
             filters_json = _json.dumps(where)
 
         try:
@@ -372,6 +375,7 @@ class DatabricksVectorStore:
 
         out: list[dict] = []
         import json as _json
+
         data_array = result.get("result", {}).get("data_array", [])
         for row in data_array:
             # row: [id, text, source, chunk_index, metadata, score]

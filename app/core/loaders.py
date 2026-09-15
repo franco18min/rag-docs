@@ -5,6 +5,7 @@ Each loader takes a file path and returns plain text. The `load_documents`
 function walks a directory tree, dispatches by extension, and returns a list
 of dicts ready for chunking.
 """
+
 from __future__ import annotations
 
 import logging

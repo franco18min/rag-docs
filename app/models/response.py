@@ -9,7 +9,9 @@ class Citation(BaseModel):
     source: str = Field(..., description="Source file or document path")
     section: str | None = Field(default=None, description="Section or heading, if available")
     page: int | None = Field(default=None, description="Page number, if available")
-    chunk_index: int | None = Field(default=None, description="Index of the chunk within the document")
+    chunk_index: int | None = Field(
+        default=None, description="Index of the chunk within the document"
+    )
     text_snippet: str = Field(..., description="Short snippet of the cited text")
     score: float = Field(..., description="Relevance score (0-1)")
     citation_number: int | None = Field(

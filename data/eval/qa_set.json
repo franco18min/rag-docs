@@ -2,101 +2,121 @@
   {
     "question": "¿Qué es Delta Lake y cuáles son sus principales garantías?",
     "ground_truth": "Delta Lake es una capa de almacenamiento open-source que trae transacciones ACID a Apache Spark y data lakes. Sus principales garantías son: atomicidad, consistencia, aislamiento y durabilidad (ACID) sobre archivos Parquet, lo que permite lecturas y escrituras confiables incluso ante fallos.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "delta_lake_intro.md"
   },
   {
     "question": "¿En qué se diferencian las capas Bronze, Silver y Gold de la arquitectura Medallion?",
     "ground_truth": "Bronze almacena datos crudos e inmutables tal como llegan de los sistemas fuente. Silver contiene datos limpios, deduplicados y enriquecidos con joins y reglas de negocio. Gold es la capa de agregación de negocio, optimizada para consumo analítico y reporting.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "medallion_architecture.md"
   },
   {
     "question": "¿Cómo funciona el Time Travel en Delta Lake?",
     "ground_truth": "Time Travel permite consultar o restaurar versiones anteriores de una tabla Delta usando el VERSION AS OF o TIMESTAMP AS OF en SQL. Internamente Delta mantiene un _delta_log con commits JSON, lo que habilita auditoría, reproducibilidad de experimentos y recuperación ante cargas erróneas.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "delta_time_travel.md"
   },
   {
     "question": "¿Qué ventajas tiene Structured Streaming sobre el streaming tradicional con DStreams?",
     "ground_truth": "Structured Streaming ofrece un modelo de programación basado en DataFrames/Datasets, exactamente igual al batch, lo que reduce código duplicado. Tiene mejor manejo de late data con watermarks, garantías exactly-once end-to-end cuando se combina con sinks idempotentes, y el optimizador Catalyst aplica mejoras automáticamente.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "structured_streaming.md"
   },
   {
     "question": "¿Cuándo conviene usar cache() vs persist() en Spark?",
     "ground_truth": "cache() usa el nivel de storage MEMORY_AND_DISK por defecto y es un alias de persist(). persist() te permite elegir el StorageLevel explícitamente (MEMORY_ONLY, DISK_ONLY, MEMORY_AND_DISK_2, etc.). Conviene persistir con replicación cuando el recompute es caro, y usar MEMORY_ONLY solo si el dataset entra cómodo en RAM.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "spark_persistence.md"
   },
   {
     "question": "¿Cuáles son los tipos de endpoint de Databricks Vector Search y en qué se diferencian?",
     "ground_truth": "Databricks Vector Search tiene dos tipos de endpoint: STANDARD, con latencia ~50-100ms adecuado para índices de hasta ~10M vectores por endpoint; y STORAGE_OPTIMIZED, para más de 10M vectores con latencia ~100-200ms y menor costo por vector. Los STORAGE_OPTIMIZED además soportan index_subtype='FULL_TEXT' para búsqueda solo por keyword sin embeddings.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "databricks_vector_search.md"
   },
   {
     "question": "¿Qué diferencia hay entre pre-computed embeddings y managed embeddings en Databricks Vector Search?",
     "ground_truth": "En pre-computed embeddings tu pipeline calcula los embeddings (BGE-M3, OpenAI, etc.) y los escribe en la columna embedding, dándote control total sobre el modelo y permitiendo versionarlos. En managed embeddings el índice llama automáticamente a un modelo de Databricks Foundation Models al insertar un documento sin embedding, sin necesidad de calcularlos localmente pero atado al modelo del vendor.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "databricks_vector_search.md"
   },
   {
     "question": "¿Cuáles son los modos de sincronización de un índice Vector Search y cuándo usar cada uno?",
     "ground_truth": "Un índice delta sync de Vector Search tiene dos pipeline_type: TRIGGERED, donde la sincronización es manual llamando index.sync() y útil para batch updates; y CONTINUOUS, donde la sincronización es automática vía CDC del log de Delta, más cara pero siempre fresh, ideal cuando los datos cambian constantemente.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "databricks_vector_search.md"
   },
   {
     "question": "¿Cuáles son las dimensiones y el tamaño del modelo BGE-M3?",
     "ground_truth": "BGE-M3 produce vectores dense de 1024 dimensiones, tiene ~568M parámetros, ocupa ~2.3GB en disco en FP32 (~1.1GB en FP16) y acepta hasta 8192 tokens de contexto, lo que lo hace adecuado tanto para queries cortas como para documentos largos.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "bge_m3.md"
   },
   {
     "question": "¿Cuándo conviene elegir BGE-M3 y cuándo NO?",
     "ground_truth": "Conviene elegir BGE-M3 cuando necesitás soporte multi-idioma serio (español+inglés mezclado, 100+ idiomas), querés evitar vendor lock-in corriendo el modelo on-prem, o tu dataset tiene queries y documentos largos porque aguanta 8192 tokens. NO conviene cuando solo trabajás en inglés con latencia crítica (all-MiniLM-L6-v2 o bge-large-en son mejores), tenés acceso a OpenAI y preferís delegar el costo de GPU a un API, o el dataset es muy grande y querés embeddings baratos.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "bge_m3.md"
   },
   {
     "question": "¿Qué hace el comando VACUUM en Delta Lake y por qué importa para Time Travel?",
     "ground_truth": "VACUUM elimina físicamente los archivos Parquet que ya no están referenciados por el _delta_log y que tienen más de N horas de antigüedad (default 7 días). Pasado ese plazo el time travel no puede acceder a esas versiones porque los archivos ya no existen. Por eso se suele aumentar la retención a 30 días en data warehouse de producción, asumiendo mayor costo de storage.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "delta_time_travel.md"
   },
   {
     "question": "¿Qué es el comando RESTORE en Delta Lake y cómo se diferencia de un SELECT con VERSION AS OF?",
     "ground_truth": "RESTORE TABLE events TO VERSION AS OF 3 sobrescribe la tabla actual con el estado de la versión 3, haciendo internamente un MERGE que añade los archivos de la versión vieja y remueve los nuevos. Es un write operation. En cambio, SELECT FROM events VERSION AS OF 3 solo lee la versión histórica sin modificar nada. RESTORE es la forma rápida de hacer rollback sin copiar Parquet manualmente.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "delta_time_travel.md"
   },
   {
     "question": "¿Qué es el modo continuous de Structured Streaming y cuándo es útil?",
     "ground_truth": "El modo continuous de Structured Streaming (en beta desde Spark 2.3) apunta a latencias de ~1ms, mucho menor que los micro-batches típicos de ~100ms. Solo soporta un subconjunto de operaciones. Es útil para casos como detección de fraude en tiempo real donde los micro-batches no son suficientemente rápidos. Se activa con trigger(continuous='1 second') en el writeStream.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "structured_streaming.md"
   },
   {
     "question": "¿Qué métricas de rendimiento expone la Spark UI para diagnosticar problemas con cache/persist?",
     "ground_truth": "La Spark UI (puerto 4040 del driver) tiene una pestaña Storage que muestra cuánta memoria y disco ocupa cada RDD/DataFrame cacheado, qué fracción está en memoria vs disco, y el hit ratio y miss count. Si ves mucha fracción spilleada a disco probablemente estás sin RAM suficiente; soluciones son aumentar memoria del executor o particionar mejor el dataset.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "spark_persistence.md"
   },
   {
     "question": "¿Cómo se especifica la columna de embeddings pre-calculados al crear un índice Vector Search?",
     "ground_truth": "Al crear un delta sync index se usan los parámetros embedding_vector_column='nombre_columna' y embedding_dimension=N. Esto le indica al índice que use los embeddings que ya están en esa columna, sin llamar al modelo de embeddings de Databricks. El pipeline es responsable de poblar la columna con los vectores correctos (por ejemplo BGE-M3 de 1024 dims).",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "databricks_vector_search.md"
   },
   {
     "question": "¿Qué es la Reciprocal Rank Fusion (RRF) y por qué se usa en búsqueda híbrida?",
     "ground_truth": "Reciprocal Rank Fusion es un método de agregación de rankings que combina listas de diferentes retrievers (BM25 y vector denso) sin requerir calibración de scores. La fórmula es RRF_score(d) = sum(1 / (k + rank_i(d))) para cada retriever i. Es simple, bien estudiada (paper Cormack et al. SIGIR 2009) y robusta. El parámetro k (típicamente 60) suaviza la contribución de ranks altos.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "retrieval.md"
   },
   {
     "question": "¿Por qué el cross-encoder (BGE-reranker) es más preciso que el bi-encoder (BGE-M3) en re-ranking?",
     "ground_truth": "El bi-encoder (BGE-M3) codifica query y documento independientemente en vectores y compara por cosine similarity, lo cual es rápido pero pierde información de interacción. El cross-encoder (BGE-reranker) codifica query+documento juntos en una sola pasada, permitiendo atención cruzada token-a-token, lo que captura matices como negaciones, sinonimia contextual y orden de palabras. Por eso se usa como segundo paso: bi-encoder para top-20 candidatos rápido, cross-encoder para re-rankear a top-5 preciso.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "retrieval.md"
   },
   {
     "question": "¿Cuántos chunks produce el chunker por defecto y por qué se usa overlap?",
     "ground_truth": "El chunker por defecto produce chunks de 512 tokens con 64 tokens de overlap (configurable vía CHUNK_SIZE y CHUNK_OVERLAP en settings). El overlap existe para que un concepto que cruza el límite entre dos chunks no se pierda: si una oración empieza en el chunk 1 y termina en el chunk 2, el overlap asegura que ambos chunks la contengan y la pregunta del usuario pueda matchear con cualquiera de los dos.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "retrieval.md"
   },
   {
     "question": "¿Qué columnas debe tener la Delta table que sirve como source de un índice Vector Search?",
     "ground_truth": "La Delta table debe tener al menos: una columna primary key (STRING, INT o LONG), una columna de embeddings llamada por convención embedding con tipo ARRAY<FLOAT> y dimensión fija, y columnas adicionales que se devuelven en el resultado (text, source, metadata, etc.). El índice se monta sobre la tabla con create_delta_sync_index apuntando source_table_name al nombre fully-qualified de la tabla.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "databricks_vector_search.md"
   },
   {
     "question": "¿Cómo escala el patrón multi-hop de la arquitectura Medallion ante fallos?",
     "ground_truth": "El patrón multi-hop (Bronze → Silver → Gold) escala bien ante fallos porque cada capa es inmutable hacia atrás. Si una regla de negocio en Gold falla, se puede recomputar Gold desde Silver sin tocar Silver. Si Silver tiene un bug, se recomputa desde Bronze sin tocar Bronze. Esta propiedad de re-derivación es la que hace el patrón resiliente: la inmutabilidad de Bronze y la idempotencia de las transformaciones son requisitos para que el rollback funcione.",
-    "context_relevance": "high"
+    "context_relevance": "high",
+    "expected_source": "medallion_architecture.md"
   }
 ]

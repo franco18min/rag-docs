@@ -6,6 +6,7 @@ deploy) based on ``settings.vector_store_backend``. Both backends expose the
 same ``add`` / ``query`` / ``list_collections`` API, so the rest of the
 pipeline is backend-agnostic.
 """
+
 from __future__ import annotations
 
 from typing import Literal

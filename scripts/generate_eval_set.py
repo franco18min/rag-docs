@@ -14,6 +14,7 @@ Usage:
     # From a hand-curated JSON
     python -m scripts.generate_eval_set --from-template data/eval/qa_set_template.json --output data/eval/qa_set.json
 """
+
 from __future__ import annotations
 
 import argparse

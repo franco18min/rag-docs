@@ -5,6 +5,7 @@ Token-aware chunking using tiktoken (cl100k_base) so chunks respect the
 embedding model's tokenizer. Each chunk carries rich metadata so retrieval
 can filter and re-rank accurately.
 """
+
 from __future__ import annotations
 
 import hashlib

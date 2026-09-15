@@ -4,13 +4,14 @@ Runs each question in the eval set through 3 retrieval configurations and
 measures Hit@K (does the expected source file appear in top-K) and mean
 reciprocal rank (MRR) for each. Saves results to data/eval/ablation.json.
 
-Use case: prove in a portfolio setting that the hybrid + rerank stack
-materially improves retrieval over the simpler baselines.
+On a small corpus, vector and hybrid often score similarly; this script
+reports Hit@K / MRR from labeled expected_source, not a narrative winner.
 
 Usage:
     python scripts/ablation.py --eval-set data/eval/qa_set.json
     python scripts/ablation.py --eval-set data/eval/qa_set.json --top-k 5
 """
+
 from __future__ import annotations
 
 import argparse
@@ -36,26 +37,6 @@ from app.core.embedder import Embedder  # noqa: E402
 from app.core.hybrid_search import HybridSearch  # noqa: E402
 from app.core.reranker import Reranker  # noqa: E402
 from app.core.vector_store import VectorStore  # noqa: E402
-
-
-def expected_source_for(question: str, ground_truth: str) -> str:
-    """Heuristic: map (question, ground_truth) to the expected MD filename."""
-    blob = f"{question} {ground_truth}".lower()
-    if "medallion" in blob or "bronze" in blob or "silver" in blob or "gold" in blob:
-        return "medallion_architecture.md"
-    if "time travel" in blob or "vacuum" in blob or "restore" in blob:
-        return "delta_time_travel.md"
-    if "structured streaming" in blob and ("dstream" in blob or "ventaja" in blob or "continuous" in blob):
-        return "structured_streaming.md"
-    if "cache" in blob and "persist" in blob:
-        return "spark_persistence.md"
-    if "delta lake" in blob:
-        return "delta_lake_intro.md"
-    if "vector search" in blob or "endpoint" in blob or "delta sync" in blob:
-        return "databricks_vector_search.md"
-    if "bge-m3" in blob or "embedding" in blob:
-        return "bge_m3.md"
-    return ""
 
 
 def _normalize_source(raw: str) -> str:
@@ -89,8 +70,10 @@ def evaluate_config(
 
     for item in qa_set:
         q = item["question"]
-        gt = item.get("ground_truth", "")
-        expected = expected_source_for(q, gt)
+        expected = (item.get("expected_source") or "").strip()
+        if not expected:
+            detail.append({"question": q, "expected": "", "top5": [], "skipped": True})
+            continue
 
         t0 = time.time()
         q_emb = embedder.embed_query(q).tolist()
@@ -114,31 +97,33 @@ def evaluate_config(
             results = candidates[:top_k]
         latencies.append((time.time() - t0) * 1000)
 
-        sources = [
-            _normalize_source(r.get("metadata", {}).get("source", ""))
-            for r in results
-        ]
+        sources = [_normalize_source(r.get("metadata", {}).get("source", "")) for r in results]
+
+        def _matches(src: str, expected_source: str = expected) -> bool:
+            exp = _normalize_source(expected_source)
+            s = _normalize_source(src)
+            return exp in s or s in exp or Path(exp).stem == Path(s).stem
+
         for k in (1, 3, 5):
-            if expected and any(expected in s for s in sources[:k]):
+            if any(_matches(s) for s in sources[:k]):
                 hits[k] += 1
-        if expected:
-            try:
-                rank = next(i + 1 for i, s in enumerate(sources) if expected in s)
-                reciprocal_ranks.append(1.0 / rank)
-            except StopIteration:
-                reciprocal_ranks.append(0.0)
+        try:
+            rank = next(i + 1 for i, s in enumerate(sources) if _matches(s))
+            reciprocal_ranks.append(1.0 / rank)
+        except StopIteration:
+            reciprocal_ranks.append(0.0)
 
         detail.append({"question": q, "expected": expected, "top5": sources})
 
-    n = len(qa_set)
+    n = len(reciprocal_ranks) or 1
     return {
         "config": name,
-        "num_questions": n,
+        "num_questions": len(reciprocal_ranks),
         "hit_at_1": hits[1] / n,
         "hit_at_3": hits[3] / n,
         "hit_at_5": hits[5] / n,
         "mrr": sum(reciprocal_ranks) / n,
-        "avg_latency_ms": sum(latencies) / n,
+        "avg_latency_ms": (sum(latencies) / len(latencies)) if latencies else 0.0,
         "detail": detail,
     }
 
@@ -156,12 +141,16 @@ def main() -> int:
     count = vs.collection_count(args.collection)
     if count == 0:
         print(f"Collection '{args.collection}' is empty.")
-        print("Run first: python -m scripts.ingest --source data/raw --collection spark_docs --rebuild")
+        print(
+            "Run first: python -m scripts.ingest --source data/raw --collection spark_docs --rebuild"
+        )
         return 1
 
     with open(args.eval_set, encoding="utf-8") as f:
         qa_set = json.load(f)
-    print(f"Ablation over {len(qa_set)} questions, top_k={args.top_k}, collection={args.collection}")
+    print(
+        f"Ablation over {len(qa_set)} questions, top_k={args.top_k}, collection={args.collection}"
+    )
     print(f"Collection has {count} chunks\n")
 
     embedder = Embedder()
@@ -201,7 +190,9 @@ def main() -> int:
 
     # Print summary table
     print("\n" + "=" * 72)
-    print(f"{'Configuration':<40s} {'Hit@1':>7s} {'Hit@3':>7s} {'Hit@5':>7s} {'MRR':>7s} {'ms':>7s}")
+    print(
+        f"{'Configuration':<40s} {'Hit@1':>7s} {'Hit@3':>7s} {'Hit@5':>7s} {'MRR':>7s} {'ms':>7s}"
+    )
     print("-" * 72)
     for r in results:
         print(

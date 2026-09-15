@@ -3,6 +3,7 @@
 These tests do NOT need GOOGLE_API_KEY, BGE-M3 downloads, or any external
 service. They wire fake stores into the pipeline and verify orchestration.
 """
+
 import numpy as np
 
 from app.core.bm25_store import BM25Store
@@ -13,6 +14,7 @@ from app.core.vector_store import VectorStore
 
 class _StubEmbedder:
     """Returns deterministic embeddings of the right dim."""
+
     dim = 8
 
     def embed(self, texts, batch_size=32, normalize=True, show_progress=False):
@@ -27,6 +29,7 @@ class _StubEmbedder:
 
 class _StubReranker:
     """Returns candidates in same order with synthetic rerank scores."""
+
     def rerank(self, query, candidates, top_k=None):
         for i, c in enumerate(candidates):
             c["rerank_score"] = 1.0 - i * 0.1

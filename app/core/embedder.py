@@ -5,6 +5,7 @@ Singleton pattern because the model is expensive to load. The default model
 (BAAI/bge-m3) supports multilingual and long-context retrieval, which fits
 the use case of technical documentation in Spanish/English.
 """
+
 from __future__ import annotations
 
 import os

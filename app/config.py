@@ -5,6 +5,7 @@ All settings are loaded from environment variables (or .env file) and exposed
 via a single `settings` instance. Use `get_settings()` if you need to override
 in tests.
 """
+
 from functools import lru_cache
 from pathlib import Path
 

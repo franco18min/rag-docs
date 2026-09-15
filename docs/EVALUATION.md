@@ -1,133 +1,127 @@
 # Evaluation Guide
 
-This project uses [RAGAS](https://docs.ragas.io/) to measure retrieval and
-generation quality. Evaluation is what separates a tutorial RAG from a
-production RAG.
+This repo measures retrieval and generation on a **small demo corpus**
+(`data/sample/`, 8 markdowns). Numbers in the README are **historical**
+for that corpus; they do not imply production quality or that hybrid
+“wins” over vector.
 
-## The four metrics
+**Supported path:** `python scripts/evaluate_light.py` (LLM-as-judge,
+one call per question).
 
-### 1. Faithfulness (target: > 0.85)
+**Not supported:** full RAGAS via `scripts/evaluate.py`. That script
+prints a disclaimer and often fails on langchain / datasets version
+conflicts. Treat failures as expected.
+
+Each Q&A in `data/eval/qa_set.json` includes `expected_source` (markdown
+filename). Ablation uses that field; it does not guess the source from
+question text.
+
+## The four metrics (light judge)
+
+Targets below are **diagnostic hints**, not résumé claims. Precision and
+recall on n≈20 with an LLM judge are **not** achievements.
+
+### 1. Faithfulness
 
 **Question**: Is the answer faithful to the retrieved context, or is the model
 hallucinating?
 
-**How RAGAS computes it**: Decomposes the answer into atomic claims, then
-checks each claim against the context. The score is the fraction of claims
-supported by the context.
+The light judge scores this as a 0–1 from claim support in context (not
+the official RAGAS decomposition pipeline).
 
 **What low faithfulness means**:
 - Prompt is too permissive (model is making things up)
-- Re-ranking is putting low-quality chunks in the context
+- Low-quality chunks in the context
 - Chunk boundaries split important context in half
 
 **Fixes**:
 - Lower temperature in the generator
 - Add explicit "answer ONLY from context" instructions
-- Tighten the re-ranker threshold
 - Increase overlap in the chunker
 
-### 2. Context Precision (target: > 0.75)
+### 2. Context Precision
 
 **Question**: Are the chunks we retrieved actually relevant to the question?
 
-**How RAGAS computes it**: For each retrieved chunk, ask an LLM "is this
-chunk useful for answering the question?" then compute precision@k.
+On this corpus the historical light score is **low (~0.40)**. That is a
+strict judge + small n, not a ranking of the retriever.
 
-**What low context precision means**:
-- Embedding model isn't capturing the right similarity (wrong domain model)
-- Top-k is too high (irrelevant chunks crowd out relevant ones)
-- Hybrid search fusion is overweighting the wrong retriever
+**What low context precision can mean**:
+- Top-k is high (irrelevant chunks in the window)
+- Judge marks long/comprehensive answers harshly
 
-**Fixes**:
-- Re-tune the RRF `k` constant
-- Lower `top_k_vector` / `top_k_bm25` to keep only strong candidates
-- Add metadata filtering to narrow the search space
+### 3. Context Recall
 
-### 3. Context Recall (target: > 0.80)
-
-**Question**: Did we retrieve all the information needed to answer the
+**Question**: Did we retrieve the information needed to answer the
 question?
 
-**How RAGAS computes it**: Decompose the ground truth answer into claims,
-then check if each claim is supported by some retrieved chunk.
+Historical light score **~0.59** on n=20. Same caveat: do not sell it as
+a retrieval win or loss.
 
-**What low context recall means**:
-- Chunking is breaking important context across chunk boundaries
-- BM25 tokenization is missing important terms
-- Embedding model is collapsing semantically different chunks together
+**What low context recall can mean**:
+- Chunking splits facts across boundaries
 - Top-k is too low
+- Ground truth is more specific than the retrieved snippets
 
-**Fixes**:
-- Increase chunk overlap
-- Increase top-k vector / top-k bm25
-- Try a different embedding model
-- Add metadata filters (e.g., only docs from the right domain)
-
-### 4. Answer Relevancy (target: > 0.85)
+### 4. Answer Relevancy
 
 **Question**: Is the answer actually addressing the question asked?
 
-**How RAGAS computes it**: Generate N synthetic questions from the answer
-and measure cosine similarity to the original question.
-
-**What low answer relevancy means**:
-- Model is being too verbose / going off-topic
-- Prompt is too generic
-- Re-ranking is bringing in off-topic context
-
-**Fixes**:
-- Add "be concise and stay on topic" to the prompt
-- Tighten the system prompt
-- Use a stronger re-ranker
+The light path approximates this with an LLM score (not RAGAS cosine of
+synthetic questions).
 
 ## Reading the numbers together
 
-| Faithfulness | Context Precision | Context Recall | Answer Relevancy | Diagnosis |
+| Faithfulness | Context Precision | Context Recall | Answer Relevancy | Diagnosis (heuristic) |
 |---|---|---|---|---|
 | Low | High | High | Low | Generation problem (prompt or model) |
-| High | Low | High | High | Re-ranking problem (top-k too high) |
-| High | High | Low | High | Chunking problem (splitting context) |
-| Low | Low | Low | Low | Fundamental: wrong corpus, wrong model, or wrong chunking strategy |
+| High | Low | High | High | Window/top-k or judge strictness |
+| High | High | Low | High | Chunking / missing facts |
+| Low | Low | Low | Low | Corpus, model, or chunking mismatch |
 
-## How to run an evaluation
+Ablation Hit@K / MRR on this demo: **hybrid ≈ vector**. Rerank can lower
+Hit@1 and add latency. See README tables; do not treat one run as an
+architecture ranking.
+
+## How to run (supported)
 
 ```bash
-# 1. Generate a Q&A set (uses Gemini to propose Q&A from your chunks)
+# Hand-curated set (preferred; has expected_source)
+# data/eval/qa_set.json is already populated for the sample corpus
+
+# Light evaluation (supported)
+python scripts/evaluate_light.py
+
+# Retrieval ablation (Hit@K / MRR from expected_source)
+python scripts/ablation.py --eval-set data/eval/qa_set.json
+```
+
+Optional: generate extra Q&A with Gemini, then add `expected_source`
+yourself:
+
+```bash
 python -m scripts.generate_eval_set --collection spark_docs --output data/eval/qa_set.json
+```
 
-# Or use a hand-curated template
-cp data/eval/qa_set_template.json data/eval/qa_set.json
-# (edit it with your own Q&A)
+Full RAGAS (unsupported):
 
-# 2. Run evaluation
+```bash
 python -m scripts.evaluate \
   --collection spark_docs \
   --eval-set data/eval/qa_set.json \
   --output data/eval/results.json
-
-# 3. Read the results
-cat data/eval/results.json
 ```
 
 ## Building a good Q&A set
 
-The quality ceiling of your metrics is the quality of your Q&A set. Tips:
-
-- **30+ questions minimum** for stable metrics
-- Mix difficulty: 5 trivial, 15 medium, 10 hard
-- Mix types: definitional, procedural, comparative, troubleshooting
-- **Ground truth must be 100% in the corpus** — if the answer isn't in the
-  indexed docs, context recall will be unfairly low
-- **Avoid opinions** — "what's the best framework" is a bad eval question
+- Include **`expected_source`** matching a sample markdown filename
+  (`delta_lake_intro.md`, `retrieval.md`, …)
+- Ground truth must be answerable from the indexed docs
+- Mix definitional / procedural / comparative questions
+- n=20 on 8 files is enough to smoke-test, not enough to rank systems
 
 ## When to re-run
 
-- After changing the chunking strategy
-- After changing the embedding model
-- After changing the re-ranker
-- After changing the prompt
-- After migrating to a new vector DB
-
-Always diff the metrics against the previous baseline. If a change makes
-some metrics better and others worse, the trade-off is a product decision,
-not an engineering one.
+- After changing chunking, embeddings, retriever, rerank, or prompt
+- Diff against the previous baseline on the **same** eval set
+- If some metrics rise and others fall, that is a product trade-off

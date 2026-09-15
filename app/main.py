@@ -7,6 +7,7 @@ Endpoints:
     POST /query          — RAG query (the main endpoint)
     POST /ingest         — ingest documents from a server-side directory
 """
+
 from __future__ import annotations
 
 import logging
@@ -153,6 +154,7 @@ async def ingest(request: IngestRequest):
         # Optional chunk size override
         if request.chunk_size or request.chunk_overlap:
             from app.core.chunker import Chunker
+
             pipeline.chunker = Chunker(
                 chunk_size=request.chunk_size,
                 chunk_overlap=request.chunk_overlap,

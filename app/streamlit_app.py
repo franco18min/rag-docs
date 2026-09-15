@@ -7,6 +7,7 @@ Run with:
 The UI talks to the FastAPI backend at the URL configured in `api_url`
 (default: http://localhost:8000). The backend must be running.
 """
+
 from __future__ import annotations
 
 import os
@@ -59,7 +60,9 @@ def main():
             st.stop()
 
         if not collections:
-            st.warning("No hay colecciones. Corré `python -m scripts.ingest --source ./data/raw --collection <name>` primero.")
+            st.warning(
+                "No hay colecciones. Corré `python -m scripts.ingest --source ./data/raw --collection <name>` primero."
+            )
             st.stop()
 
         collection = st.selectbox("Colección", collections, index=0)

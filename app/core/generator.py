@@ -5,6 +5,7 @@ Generates an answer from a query + context chunks, with explicit citation
 formatting. Uses structured prompting to force the model to ground every
 claim in the provided context.
 """
+
 from __future__ import annotations
 
 import logging
@@ -173,9 +174,6 @@ def parse_citations(answer: str, context_chunks: list[dict]) -> list[dict]:
             "No parseable [#N] citations in the generated answer; "
             "falling back to top-k context chunks"
         )
-        return [
-            _chunk_to_citation(chunk, i)
-            for i, chunk in enumerate(context_chunks, start=1)
-        ]
+        return [_chunk_to_citation(chunk, i) for i, chunk in enumerate(context_chunks, start=1)]
 
     return [_chunk_to_citation(context_chunks[n - 1], n) for n in numbers]

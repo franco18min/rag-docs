@@ -1,4 +1,5 @@
 """Tests for the sliding window chunker."""
+
 import pytest
 
 from app.core.chunker import Chunker

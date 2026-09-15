@@ -15,6 +15,7 @@ End-to-end validation of the Databricks Vector Search adapter. The test:
        closest document
     5. Cleans up the index and Delta table
 """
+
 from __future__ import annotations
 
 import os

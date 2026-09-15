@@ -7,6 +7,7 @@ Encapsulates the full flow:
 Provides a single class that the API, the Streamlit UI, and the evaluation
 scripts can all share.
 """
+
 from __future__ import annotations
 
 import logging
@@ -83,8 +84,7 @@ class RAGPipeline:
         chunk_dicts = self.chunker.chunk_documents(documents)
         # Convert dataclass to dict
         chunk_dicts = [
-            {"id": c.chunk_id, "text": c.text, "metadata": c.metadata}
-            for c in chunk_dicts
+            {"id": c.chunk_id, "text": c.text, "metadata": c.metadata} for c in chunk_dicts
         ]
 
         if not chunk_dicts:
@@ -121,7 +121,9 @@ class RAGPipeline:
         if show_progress:
             logger.info(
                 "Ingested %d chunks from %d documents in %.2fs",
-                len(chunk_dicts), len(documents), duration,
+                len(chunk_dicts),
+                len(documents),
+                duration,
             )
         return {
             "documents_loaded": len(documents),

@@ -9,6 +9,7 @@ Removes, in order:
 
 Use --keep-endpoint or --keep-catalog to skip those steps.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -83,7 +84,9 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--catalog", default=os.environ.get("DATABRICKS_CATALOG", "rag_docs"))
     p.add_argument("--schema", default=os.environ.get("DATABRICKS_SCHEMA", "production"))
-    p.add_argument("--endpoint", default=os.environ.get("DATABRICKS_VECTOR_ENDPOINT", "rag_docs_endpoint"))
+    p.add_argument(
+        "--endpoint", default=os.environ.get("DATABRICKS_VECTOR_ENDPOINT", "rag_docs_endpoint")
+    )
     p.add_argument("--collection", default=os.environ.get("COLLECTION_NAME", "spark_docs"))
     p.add_argument("--keep-endpoint", action="store_true")
     p.add_argument("--keep-catalog", action="store_true")

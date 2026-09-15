@@ -8,6 +8,7 @@ calibration across the two retrievers.
 Reference: Cormack et al., "Reciprocal Rank Fusion outperforms Condorcet and
 individual Rank Learning Methods", SIGIR 2009.
 """
+
 from __future__ import annotations
 
 from app.config import settings
@@ -47,9 +48,7 @@ class HybridSearch:
             query_embedding=query_embedding,
             top_k=top_k_vector,
         )
-        bm25_results = self.bm25_store.query(
-            query, top_k=top_k_bm25, collection=collection
-        )
+        bm25_results = self.bm25_store.query(query, top_k=top_k_bm25, collection=collection)
 
         return self._rrf_fusion(vec_results, bm25_results)
 
@@ -103,6 +102,8 @@ class HybridSearch:
         # Mark dual-retrieval bonus
         for r in fused:
             r["source_retriever"] = (
-                "hybrid" if "_vec_rank" in r and "_bm25_rank" in r else r.get("source_retriever", "unknown")
+                "hybrid"
+                if "_vec_rank" in r and "_bm25_rank" in r
+                else r.get("source_retriever", "unknown")
             )
         return fused

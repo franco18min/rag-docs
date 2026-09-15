@@ -1,6 +1,11 @@
 """
 RAGAS evaluation runner.
 
+Disclaimer: full RAGAS often fails in this environment (langchain /
+datasets version conflicts). The supported evaluation path is
+`python scripts/evaluate_light.py`. This script is kept as a historical
+attempt at the official RAGAS stack; treat failures as expected.
+
 Loads a Q&A set with ground truth, runs each question through the RAG
 pipeline, and computes RAGAS metrics:
     - faithfulness           (¿la respuesta es fiel al contexto?)
@@ -12,6 +17,7 @@ Usage:
     python -m scripts.evaluate --collection spark_docs --eval-set data/eval/qa_set.json
     python -m scripts.evaluate --collection spark_docs --eval-set data/eval/qa_set.json --output data/eval/results.json
 """
+
 from __future__ import annotations
 
 import argparse
@@ -35,6 +41,10 @@ def main():
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+    print(
+        "Disclaimer: full RAGAS may fail here (dependency conflicts). "
+        "Supported path: python scripts/evaluate_light.py"
+    )
 
     # --- Load eval set ---
     eval_path = Path(args.eval_set)
@@ -115,7 +125,11 @@ def main():
     print("\n" + "=" * 60)
     print("📊 RAGAS Evaluation Results")
     print("=" * 60)
-    metric_cols = [c for c in df.columns if c in ("faithfulness", "context_precision", "context_recall", "answer_relevancy")]
+    metric_cols = [
+        c
+        for c in df.columns
+        if c in ("faithfulness", "context_precision", "context_recall", "answer_relevancy")
+    ]
     for col in metric_cols:
         mean = df[col].mean()
         print(f"   {col:25s}: {mean:.4f}  (target > 0.75–0.85)")

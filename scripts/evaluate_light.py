@@ -1,7 +1,9 @@
-"""Lightweight RAGAS-equivalent evaluation.
+"""Lightweight RAGAS-style evaluation (supported path).
 
-Avoids the heavy RAGAS dependency (which is broken in this env due to
-langchain_community 0.0.x conflicts). Implements the same 4 metrics
+Full RAGAS (`scripts/evaluate.py`) is not a reliable path in this repo
+(langchain/datasets conflicts). Use this script instead.
+
+Avoids the heavy RAGAS dependency. Implements the same 4 metrics
 manually with a single Gemini Flash-Lite call per question.
 
 Metrics computed per question:
@@ -14,6 +16,7 @@ Metrics computed per question:
 Cost: 1 generation + 1 judging call per question (≈10 calls for 5 questions).
 This is ~5x cheaper than full RAGAS on free tier.
 """
+
 from __future__ import annotations
 
 import json
@@ -65,18 +68,31 @@ def _judge(question: str, ground_truth: str, answer: str, contexts: list[str]) -
     model = genai.GenerativeModel(os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest"))
     ctx_str = "\n---\n".join(c[:300] for c in contexts[:5])
     prompt = JUDGE_PROMPT.format(
-        question=question, ground_truth=ground_truth, answer=answer, contexts=ctx_str,
+        question=question,
+        ground_truth=ground_truth,
+        answer=answer,
+        contexts=ctx_str,
     )
     res = model.generate_content(prompt)
     text = res.text.strip()
     # Extract first JSON object from the response
     m = re.search(r"\{[^{}]+\}", text)
     if not m:
-        return {"faithfulness": 0.0, "context_precision": 0.0, "context_recall": 0.0, "answer_relevancy": 0.0}
+        return {
+            "faithfulness": 0.0,
+            "context_precision": 0.0,
+            "context_recall": 0.0,
+            "answer_relevancy": 0.0,
+        }
     try:
         return {k: float(v) for k, v in json.loads(m.group(0)).items()}
     except Exception:
-        return {"faithfulness": 0.0, "context_precision": 0.0, "context_recall": 0.0, "answer_relevancy": 0.0}
+        return {
+            "faithfulness": 0.0,
+            "context_precision": 0.0,
+            "context_recall": 0.0,
+            "answer_relevancy": 0.0,
+        }
 
 
 def main() -> int:

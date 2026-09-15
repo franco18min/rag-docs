@@ -5,6 +5,7 @@ Persisted to disk via pickle. Tokenization is intentionally simple (lowercase
 + split on non-alphanumerics) because the corpus is technical documentation
 where exact terms (function names, config flags) matter more than morphology.
 """
+
 from __future__ import annotations
 
 import pickle
@@ -38,7 +39,9 @@ class BM25Store:
     # ------------------------------------------------------------------
     def _persist_path_for(self, collection: str) -> Path:
         # Allow one BM25 index per collection in the future by namespacing
-        return self.persist_path.with_name(f"{self.persist_path.stem}_{collection}{self.persist_path.suffix}")
+        return self.persist_path.with_name(
+            f"{self.persist_path.stem}_{collection}{self.persist_path.suffix}"
+        )
 
     def save(self, collection: str) -> None:
         path = self._persist_path_for(collection)

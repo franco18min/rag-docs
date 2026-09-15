@@ -6,6 +6,7 @@ jointly encodes the query and each candidate. Cross-encoders are slower than
 bi-encoders but much more accurate — that's why we use them on a small
 candidate set (typically top-20 from hybrid → top-5).
 """
+
 from __future__ import annotations
 
 import os

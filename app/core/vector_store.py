@@ -5,6 +5,7 @@ Persistent client, per-collection index, cosine similarity on dense embeddings.
 Stores chunks with metadata so retrieval can later filter on source, section,
 or date.
 """
+
 from __future__ import annotations
 
 import shutil

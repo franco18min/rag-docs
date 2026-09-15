@@ -20,7 +20,7 @@ Sistema RAG production-grade sobre documentación técnica con búsqueda híbrid
 - Diseño de pipelines de ingestión (transferible desde data engineering)
 - **Búsqueda híbrida** (BM25 + vector denso) con RRF y re-ranking cross-encoder
 - **Ablation study** que justifica cada decisión arquitectónica
-- **Evaluación sistemática** (20 Q&A con ground truth, RAGAS-style)
+- **Evaluación sistemática** (20 Q&A con `expected_source`; camino soportado: `evaluate_light.py`)
 - **5 ADRs** documentando decisiones técnicas
 - **CI** con GitHub Actions (lint + mypy + tests)
 - **Backend vendor-agnostic**: Chroma (local) ↔ Databricks Vector Search (prod)
@@ -40,7 +40,7 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 ```
 ┌──────────────┐
 │  Documentos  │  (PDF, MD, HTML, TXT)
-│   (50-100)   │
+│  demo: 8 MD  │
 └──────┬───────┘
        │ 1. Ingesta (loaders por formato)
        ▼
@@ -84,7 +84,7 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 | **Backend** | FastAPI + Uvicorn | $0 |
 | **Frontend demo** | Streamlit | $0 |
 | **Chunking** | tiktoken (cl100k_base) | $0 |
-| **Evaluation** | RAGAS + datasets | $0 |
+| **Evaluation** | `evaluate_light.py` (LLM-as-judge); full RAGAS no soportado | $0 |
 | **Observability** | Interface lista para Langfuse (instrumentación opcional) | $0 |
 | **Deploy** | Docker + Docker Compose | $0 |
 
@@ -169,19 +169,20 @@ streamlit run app/streamlit_app.py
 # Abrí http://localhost:8501
 ```
 
-### 5. (Opcional) Evaluar con RAGAS
+### 5. (Opcional) Evaluar (camino soportado: light)
 
 ```bash
 # Generar un set de Q&A desde la colección (usa Gemini)
 python -m scripts.generate_eval_set --collection spark_docs --output data/eval/qa_set.json --num-questions 30
 
-# O usar el template y editarlo a mano
+# O usar el template y editarlo a mano (incluye expected_source)
 cp data/eval/qa_set_template.json data/eval/qa_set.json
 
-# Correr evaluación
-python -m scripts.evaluate --collection spark_docs --eval-set data/eval/qa_set.json
+# Camino soportado (1 LLM call/Q). Full RAGAS (`scripts/evaluate.py`) no está soportado aquí.
+python -m scripts.evaluate_light
 
-# Vas a ver métricas: faithfulness, context_precision, context_recall, answer_relevancy
+# Ablation Hit@K / MRR (usa expected_source, no heurística de texto)
+python scripts/ablation.py --eval-set data/eval/qa_set.json
 ```
 
 ### 6. (Opcional) Correr los tests
@@ -235,8 +236,8 @@ rag-docs/
 ├── scripts/                       # Scripts CLI
 │   ├── ingest.py                  # Ingesta de documentos (PDF/MD/HTML/TXT)
 │   ├── generate_eval_set.py       # Generar Q&A set con Gemini o desde template
-│   ├── evaluate.py                # Full RAGAS runner (requiere fix langchain)
-│   ├── evaluate_light.py          # Lightweight RAGAS-style eval (1 LLM call/Q)
+│   ├── evaluate.py                # Full RAGAS (no soportado; disclaimer en el script)
+│   ├── evaluate_light.py          # Camino soportado (1 LLM call/Q)
 │   ├── ablation.py                # vector vs hybrid vs hybrid+rerank
 │   ├── smoke_test_databricks.py   # End-to-end test contra Databricks
 │   └── cleanup_databricks.py      # Drop endpoint + table + catalog
@@ -286,7 +287,7 @@ rag-docs/
 - [x] Citas a las fuentes con score
 - [x] API REST con FastAPI (health, collections, query, ingest)
 - [x] UI demo con Streamlit
-- [x] Evaluación con RAGAS (faithfulness, precision, recall, relevancy)
+- [x] Evaluación light (faithfulness / relevancy; precision/recall no se venden como logro)
 - [x] Auto-generación de Q&A con Gemini para eval
 - [x] Tests unitarios (chunker, hybrid search, pipeline)
 - [x] Dockerfile + docker-compose
@@ -294,11 +295,13 @@ rag-docs/
 
 ---
 
-## Métricas de evaluación (RAGAS)
+## Métricas de evaluación (históricas, corpus chico)
 
-### Ablation: ¿cuánto aporta cada componente?
+Números de una corrida sobre el corpus de demo (`data/sample/`, 8 markdowns, ~18–247 chunks según ingest). **No generalizan** a un corpus de 50–100 documentos.
 
-Comparación de las 3 configuraciones de retrieval sobre 20 Q&A con ground truth (corpus de 18 chunks):
+### Ablation (Hit@K / MRR)
+
+Las 3 configuraciones sobre 20 Q&A con `expected_source`. En este n chico, **hybrid ≈ vector** (mismos Hit@K / MRR). Eso no implica que hybrid “gane”.
 
 | Configuración | Hit@1 | Hit@3 | Hit@5 | MRR | Latencia |
 |---------------|-------|-------|-------|-----|----------|
@@ -306,26 +309,26 @@ Comparación de las 3 configuraciones de retrieval sobre 20 Q&A con ground truth
 | **hybrid** (BM25 + vector, RRF) | 0.900 | 0.900 | 0.900 | 0.900 | 77 ms |
 | **hybrid + rerank** (BGE-reranker) | 0.850 | 0.900 | 0.900 | 0.867 | 5086 ms |
 
-> **Hallazgo**: en este corpus chico, el re-ranker cross-encoder **empeoró** Hit@1 (0.85 vs 0.90) y agregó 58× latencia. El sweet spot es `hybrid sin rerank`. El rerank solo ayuda con corpus >10K chunks. Ver [`docs/adr/0003-rerank-cross-encoder.md`](docs/adr/0003-rerank-cross-encoder.md) para el análisis completo.
+> En esta corrida el rerank bajó Hit@1 y sumó ~58× latencia. Eso es un dato de este corpus, no un ranking de arquitecturas. Ver [`docs/adr/0003-rerank-cross-encoder.md`](docs/adr/0003-rerank-cross-encoder.md).
 
 Para reproducir: `python scripts/ablation.py --eval-set data/eval/qa_set.json`
 
-### RAGAS-style metrics (generación)
+### Generación (`evaluate_light.py`)
 
-Lightweight evaluation con Gemini Flash-Lite como judge (1 call por pregunta, ~5x más barato que full RAGAS):
+Camino soportado: LLM-as-judge, 1 call por pregunta. Full RAGAS (`scripts/evaluate.py`) **no está soportado** (conflictos langchain/datasets).
 
-| Métrica | Valor | Target |
-|---------|-------|--------|
-| **Faithfulness** | 0.87 | > 0.85 |
-| **Answer Relevancy** | 1.00 | > 0.85 |
-| **Context Precision** | 0.40 | > 0.75 |
-| **Context Recall** | 0.59 | > 0.80 |
+| Métrica | Valor (histórico) | Notas |
+|---------|-------------------|-------|
+| **Faithfulness** | 0.87 | LLM-as-judge; n=20 |
+| **Answer Relevancy** | 1.00 | LLM-as-judge; n=20 |
+| **Context Precision** | 0.40 | No se interpreta como logro; n chico + judge estricto |
+| **Context Recall** | 0.59 | Idem; no comparar contra “target de producción” |
 
-> Faithfulness y answer_relevancy en rango. Precision/recall bajos son por la LLM-as-judge siendo estricta con respuestas largas y ground_truths específicos — son métricas "duras" que castigan a sistemas con respuestas comprehensivas.
+Precision y recall aquí son definiciones de un judge con n pequeño, no evidencia de calidad de retrieval.
 
-Para reproducir: `python scripts/evaluate_light.py --eval-set data/eval/qa_set.json`
+Para reproducir: `python scripts/evaluate_light.py`
 
-Si llegás a los targets de faithfulness y answer_relevancy con 20+ Q&A, estás en el top 10% de implementaciones RAG. Ver [`docs/EVALUATION.md`](docs/EVALUATION.md) para cómo interpretar y diagnosticar.
+Cómo leer las métricas: [`docs/EVALUATION.md`](docs/EVALUATION.md).
 
 ---
 

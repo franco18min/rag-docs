@@ -8,6 +8,7 @@ Usage:
     python -m scripts.ingest --source ./data/raw --collection spark_docs
     python -m scripts.ingest --source ./data/raw --collection spark_docs --rebuild
 """
+
 from __future__ import annotations
 
 import argparse
@@ -28,7 +29,9 @@ def main():
     parser.add_argument("--collection", required=True, help="Target collection name")
     parser.add_argument("--chunk-size", type=int, default=None, help="Override CHUNK_SIZE")
     parser.add_argument("--chunk-overlap", type=int, default=None, help="Override CHUNK_OVERLAP")
-    parser.add_argument("--rebuild", action="store_true", help="Drop and recreate the collection first")
+    parser.add_argument(
+        "--rebuild", action="store_true", help="Drop and recreate the collection first"
+    )
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
