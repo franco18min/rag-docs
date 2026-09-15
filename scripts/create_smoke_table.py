@@ -17,7 +17,7 @@ from app.config import settings
 token = settings.databricks_token
 
 # The default storage location from the catalog. The table needs a sub-path.
-storage_root = "s3://dbstorage-prod-ip4fh/uc/3171b471-4f23-4baf-a9b5-656db7e14225/f748614b-2609-49c4-aa26-f6a3ad20b2ef"
+storage_root = "s3://<catalog-storage-root>"
 
 body = {
     "catalog_name": "rag_docs",

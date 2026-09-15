@@ -29,7 +29,7 @@ quality, cost, and maintainability.
                          │ 4. Rerank (opt-in; BGE-reranker, top-20 → top-5)
                          ▼
               ┌─────────────────────┐
-              │  Gemini 2.0 Flash   │  Grounded answer with [#N] citations
+              │  Gemini Flash-Lite  │  Grounded answer with [#N] citations
               └──────────┬──────────┘
                          │ 5. Response (answer + citations + scores)
                          ▼
@@ -110,7 +110,9 @@ budget justify loading the cross-encoder.
 **Trade-off**: ~400MB to download, ~1GB RAM to run, ~50ms per chunk on CPU.
 For 300 documents × 5 chunks each = 1500 chunks, ingest is ~1.5 minutes.
 
-### 5. Gemini 2.0 Flash for generation
+### 5. Gemini Flash-Lite for generation
+
+Default model id: `gemini-flash-lite-latest`.
 
 **Why not GPT-4o / Claude?**
 - Free tier (1,500 req/day) is enough for evaluation runs and demos

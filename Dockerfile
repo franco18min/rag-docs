@@ -13,10 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app code
 COPY . .
-RUN chmod +x /app/scripts/start_space.sh
 
-# Local compose keeps API on :8000. Hugging Face Spaces sets SPACE_ID → start script
-# (API :8000 + ingest sample + Streamlit :7860).
-EXPOSE 8000 7860
+EXPOSE 8000
 
-CMD ["sh", "-c", "if [ -n \"${SPACE_ID:-}\" ]; then exec /app/scripts/start_space.sh; else exec uvicorn app.main:app --host 0.0.0.0 --port 8000; fi"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

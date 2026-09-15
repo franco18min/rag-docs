@@ -43,7 +43,7 @@ def main():
     st.title("RAG Docs")
     st.caption(
         "Sistema de preguntas y respuestas sobre documentación técnica · "
-        "Búsqueda híbrida (BM25 + vector) con re-ranking cross-encoder y Gemini 2.0 Flash"
+        "Búsqueda híbrida (BM25 + vector) con re-ranking cross-encoder y Gemini Flash-Lite"
     )
 
     # ---- Sidebar ----

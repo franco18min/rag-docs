@@ -62,8 +62,8 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
        │ 4. Generation
        ▼
 ┌──────────────┐
-│  LLM (Gemini │  Gemini 2.0 Flash con prompt estructurado
-│  2.0 Flash)  │  + citas [#N] obligatorias
+│  LLM (Gemini │  Gemini Flash-Lite (gemini-flash-lite-latest)
+│  Flash-Lite) │  + citas [#N] obligatorias
 └──────┬───────┘
        │ 5. Response
        ▼
@@ -76,7 +76,7 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 
 | Componente | Herramienta | Costo |
 |---|---|---|
-| **LLM** | Google Gemini 2.0 Flash (free tier: 1,500 req/día) | $0 |
+| **LLM** | Google Gemini Flash-Lite (`gemini-flash-lite-latest`, free tier) | $0 |
 | **Embeddings** | HuggingFace `BAAI/bge-m3` (local, 1024-dim, multilingüe) | $0 |
 | **Re-ranker** | HuggingFace `BAAI/bge-reranker-base` (local) | $0 |
 | **Vector DB** | Chroma (local) / Databricks Vector Search (opcional) | $0 |
@@ -86,7 +86,7 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 | **Chunking** | tiktoken (cl100k_base) | $0 |
 | **Evaluation** | `evaluate_light.py` (LLM-as-judge); full RAGAS no soportado | $0 |
 | **Observability** | Langfuse **no implementado** (`trace_id` siempre `None`) | $0 |
-| **Deploy** | Docker + Docker Compose | $0 |
+| **Local stack** | Docker + Docker Compose (API + Streamlit) | $0 |
 
 **Costo total para construir + demostrar: USD 0**
 
@@ -135,7 +135,7 @@ El corpus de demo está en `data/sample/` (markdowns de Spark / Delta / Vector S
 python -m scripts.ingest --source ./data/sample --collection spark_docs
 ```
 
-Vas a ver: chunking → embedding → indexing. Cuando termine: `Ingest complete: 247 chunks from 8 documents in 12.4s`.
+Vas a ver: chunking → embedding → indexing. Al terminar, el script imprime el recuento **real** de chunks, documentos y tiempo de esa corrida (no un número fijo de ejemplo).
 
 ### 3. Levantar la API
 
@@ -154,7 +154,7 @@ Respuesta esperada:
   "answer": "La arquitectura Medallion es un patrón de diseño de datos...",
   "citations": [{"source": "...", "score": 0.92, "text_snippet": "..."}],
   "latency_ms": 1240,
-  "model": "gemini-2.0-flash-exp",
+  "model": "gemini-flash-lite-latest",
   "collection": "spark_docs",
   "chunks_retrieved": 5
 }
@@ -167,6 +167,14 @@ Respuesta esperada:
 streamlit run app/streamlit_app.py
 
 # Abrí http://localhost:8501
+```
+
+### Docker Compose (local)
+
+```bash
+# Local: API en :8000, Streamlit en :8501
+# Requiere .env con GOOGLE_API_KEY
+docker compose up
 ```
 
 ### 5. (Opcional) Evaluar (camino soportado: light)
@@ -182,7 +190,7 @@ cp data/eval/qa_set_template.json data/eval/qa_set.json
 python -m scripts.evaluate_light
 
 # Ablation Hit@K / MRR (usa expected_source, no heurística de texto)
-python scripts/ablation.py --eval-set data/eval/qa_set.json
+python scripts.ablation.py --eval-set data/eval/qa_set.json
 ```
 
 ### 6. (Opcional) Correr los tests
@@ -283,7 +291,7 @@ rag-docs/
 - [x] Búsqueda BM25 con rank-bm25 (persistido a disco)
 - [x] Búsqueda híbrida con RRF (k=60)
 - [x] Re-ranking opt-in con cross-encoder BGE-reranker-base (default off)
-- [x] Generación con Gemini 2.0 Flash + prompt estructurado
+- [x] Generación con Gemini Flash-Lite (`gemini-flash-lite-latest`) + prompt estructurado
 - [x] Citas a las fuentes con score
 - [x] API REST con FastAPI (health, collections, query, ingest)
 - [x] UI demo con Streamlit
@@ -326,39 +334,9 @@ Camino soportado: LLM-as-judge, 1 call por pregunta. Full RAGAS (`scripts/evalua
 
 Precision y recall aquí son definiciones de un judge con n pequeño, no evidencia de calidad de retrieval.
 
-Para reproducir: `python scripts/evaluate_light.py`
+Para reproducir: `python scripts.evaluate_light.py`
 
 Cómo leer las métricas: [`docs/EVALUATION.md`](docs/EVALUATION.md).
-
----
-
-## Deploy (gratis)
-
-### Opción A: Docker Compose (local / VPS)
-
-```bash
-docker-compose up -d
-# API en :8000, Streamlit en :8501
-```
-
-### Opción B: Railway (más fácil para deploy público)
-
-1. Conectá tu repo de GitHub
-2. Railway detecta el Dockerfile automáticamente
-3. Deploy → URL pública en 2 minutos
-
-### Opción C: Fly.io
-
-```bash
-fly launch
-fly deploy
-```
-
-### Opción D: Hugging Face Spaces (demo pública)
-
-No hay demo pública en Hugging Face: esta cuenta no es PRO. En el Hub actual `create_repo` solo acepta `gradio` | `docker` | `static`; Streamlit nativo ya no es un SDK de creación, y Gradio/Docker (incluido el template Streamlit) en `cpu-basic` responden **402**. Static no sirve para esta app.
-
-Entrypoint local para un Space si la cuenta pasa a PRO: `scripts/start_space.sh` (API + ingest de `data/sample` / `spark_docs` + Streamlit :7860). Variables previstas: `ENABLE_RERANK=false`, `GEMINI_MODEL=gemini-flash-lite-latest`, `VECTOR_STORE_BACKEND=chroma`. `GOOGLE_API_KEY` como *secret* del Space (no en el repo).
 
 ---
 

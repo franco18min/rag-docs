@@ -17,7 +17,7 @@ A visual overview of the system. Two parts:
                         │              │                     │
                         ├──────────────┤   hybrid con BM25   ├──▶ Rerank?──▶ LLM ──▶ Answer
                         │              │                     │    (cross-    (Gemini    + Citations
-                        │              └──▶  BM25 keyword ──┘    encoder)    Flash)
+                        │              └──▶  BM25 keyword ──┘    encoder)    Flash-Lite)
                         ▼
                   [Vector Store]
                   Chroma | Databricks VS
