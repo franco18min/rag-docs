@@ -1,4 +1,4 @@
-# Architecture Decision Records
+# ADRs (registros de decisión de arquitectura)
 
 Decisiones de diseño documentadas con su contexto, opciones consideradas y trade-offs.
 

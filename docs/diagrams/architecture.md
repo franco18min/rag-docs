@@ -1,10 +1,10 @@
-# RAG Docs — Architecture Diagram
+# RAG Docs — Diagrama de arquitectura
 
-A visual overview of the system. Two parts:
-1. **High-level**: what RAG is, in 30 seconds
-2. **Detailed**: how the actual project implements each step
+Vista visual del sistema. Dos partes:
+1. **Alto nivel**: qué es RAG, en 30 segundos
+2. **Detalle**: cómo este proyecto implementa cada paso
 
-## High-level: two phases, one shared store
+## Alto nivel: dos fases, un store compartido
 
 ```
                           RAG: dos fases, un store
@@ -23,15 +23,15 @@ A visual overview of the system. Two parts:
                   Chroma | Databricks VS
 ```
 
-**Key insight:** los mismos datos (chunks + embeddings) se usan para escribir (offline) y para buscar (online). La pipeline se monta sobre ese store compartido.
+**Idea clave:** los mismos datos (chunks + embeddings) se usan para escribir (offline) y para buscar (online). La pipeline se monta sobre ese store compartido.
 
-## Detailed: each box
+## Detalle: cada caja
 
 ```
                   RAG: Retrieval-Augmented Generation
                   =====================================
 
-  ┌──────────────────── OFFLINE (one-time) ─────────────────────┐
+  ┌──────────────────── OFFLINE (una vez) ─────────────────────┐
   │                                                             │
   │   ┌──────────┐   ┌──────────┐   ┌──────────┐               │
   │   │Documents │──▶│ Chunker  │──▶│ Embedder │               │
@@ -55,7 +55,7 @@ A visual overview of the system. Two parts:
   │                                     │                       │
   └─────────────────────────────────────┼───────────────────────┘
                                         │
-  ┌──────────────────── ONLINE (per query) ──┼──────────────┐
+  ┌──────────────────── ONLINE (por query) ─┼──────────────┐
   │                                     │               │
   │   ┌──────────┐                     │               │
   │   │ Question │                     │               │
@@ -63,20 +63,20 @@ A visual overview of the system. Two parts:
   │        │                            │               │
   │        ▼                            │               │
   │   ┌──────────┐                     │               │
-  │   │  Embed   │   (same BGE-M3)    │               │
+  │   │  Embed   │   (mismo BGE-M3)   │               │
   │   │  query   │                     │               │
   │   └────┬─────┘                     │               │
   │        │                            │               │
   │        ▼                            │               │
   │   ┌────────────────────────────────┘               │
-  │   │  Vector Search (cosine top-K)  ◀── reads index
+  │   │  Vector Search (cosine top-K)  ◀── lee el índice
   │   │           +  BM25 keyword
   │   │           =  RRF fusion
   │   └────────────┬───────────────────┘
   │                │
   │                ▼
   │   ┌────────────────┐
-  │   │   Reranker     │  (BGE-reranker, optional)
+  │   │   Reranker     │  (BGE-reranker, opcional)
   │   └────────┬───────┘
   │            │
   │            ▼
@@ -89,31 +89,31 @@ A visual overview of the system. Two parts:
   │            ▼
   │   ┌────────────────┐
   │   │  Answer +      │
-  │   │  Citations     │  (text + source paths)
+  │   │  Citations     │  (texto + paths de source)
   │   └────────────────┘
   │
   └─────────────────────────────────────────────────────────┘
 ```
 
-## Mermaid version (renders in GitHub)
+## Versión Mermaid (se renderiza en GitHub)
 
 ```mermaid
 flowchart TB
-    subgraph offline["Offline: ingestion (one-time)"]
+    subgraph offline["Offline: ingestión (una vez)"]
         A[Documents<br/>PDF/MD/HTML/TXT] --> B[Chunker<br/>512 tok + 64 overlap]
         B --> C[Embedder<br/>BGE-M3 1024-dim]
         C --> D[Vector Store<br/>Chroma or Databricks VS]
     end
 
-    subgraph online["Online: query (per question)"]
-        E[Question] --> F[Embed query<br/>same BGE-M3]
+    subgraph online["Online: query (por pregunta)"]
+        E[Question] --> F[Embed query<br/>mismo BGE-M3]
         F --> G[Vector Search<br/>top-K by cosine]
         G --> H[Reranker opt-in<br/>BGE-reranker cross-encoder]
         H --> I[LLM<br/>Gemini Flash-Lite]
         I --> J[Answer + Citations]
     end
 
-    D -. shared index .-> G
+    D -. índice compartido .-> G
 
     K[BM25<br/>keyword search] --> G
 
@@ -121,24 +121,25 @@ flowchart TB
     style J fill:#d4f4dd,stroke:#333
 ```
 
-## How to read this in an interview
+## Cómo leerlo en una entrevista
 
-When explaining RAG to a non-technical recruiter or peer, use the **high-level** diagram (the first one). Walk through it left to right, top to bottom:
+Cuando expliques RAG a un recruiter no técnico o a un par, usá el diagrama de
+**alto nivel** (el primero). Recorrélo de izquierda a derecha, de arriba abajo:
 
-1. "We take documents, split them into chunks, and convert each chunk to a number-vector."
-2. "When the user asks a question, we convert the question the same way."
-3. "We search the store for vectors similar to the question's vector."
-4. "We feed the top chunks plus the question to an LLM."
-5. "The LLM answers using only the chunks we found, and we cite the sources."
+1. "Tomamos documentos, los partimos en chunks y convertimos cada chunk a un vector numérico."
+2. "Cuando el usuario pregunta, convertimos la pregunta de la misma forma."
+3. "Buscamos en el store vectores similares al vector de la pregunta."
+4. "Pasamos los top chunks más la pregunta a un LLM."
+5. "El LLM responde usando solo los chunks que encontramos, y citamos las fuentes."
 
-For an AI engineer interview, add:
-- "We use hybrid search (BM25 + vector) fused with RRF because vector fails on exact keywords."
-- "Cross-encoder rerank is opt-in (`ENABLE_RERANK`); default is off after ablation on this corpus."
-- "We picked BGE-M3 for multilingual support and on-prem deployment."
-- "We split the project into Chroma (dev) and Databricks (prod) backends behind a single interface."
+Para una entrevista de ingeniería de AI, sumá:
+- "Usamos búsqueda híbrida (BM25 + vector) fusionada con RRF porque el vector falla en keywords exactas."
+- "El rerank con cross-encoder es opt-in (`ENABLE_RERANK`); el default es off después de la ablation en este corpus."
+- "Elegimos BGE-M3 por soporte multilingüe y deploy on-prem."
+- "Separamos Chroma (dev) y Databricks (prod) detrás de una sola interfaz."
 
-## See also
+## Ver también
 
-- [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) — full text version
-- [`docs/adr/0004-vector-store-abstraction.md`](../adr/0004-vector-store-abstraction.md) — why we have two backends
-- [`docs/adr/0002-hybrid-search-bm25-vector.md`](../adr/0002-hybrid-search-bm25-vector.md) — hybrid search
+- [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) — versión en texto completo
+- [`docs/adr/0004-vector-store-abstraction.md`](../adr/0004-vector-store-abstraction.md) — por qué hay dos backends
+- [`docs/adr/0002-hybrid-search-bm25-vector.md`](../adr/0002-hybrid-search-bm25-vector.md) — búsqueda híbrida

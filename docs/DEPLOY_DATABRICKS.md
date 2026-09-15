@@ -8,7 +8,7 @@ Este documento describe cómo deployar el RAG pipeline en una workspace
 de Databricks Free Edition, dejando recursos prendidos solo el tiempo
 necesario para la validación.
 
-## TL;DR
+## Resumen
 
 ```bash
 # 1. Instalar dependencias
@@ -21,7 +21,7 @@ cp .env.example .env
 # Editar .env: pegar tu DATABRICKS_TOKEN y DATABRICKS_HOST
 
 # 3. Provisionar catalog, schema, endpoint (UI o API)
-#    (Ver "Setup manual" más abajo)
+#    (Ver "Configuración manual" más abajo)
 
 # 4. Smoke test end-to-end (crea tabla + index, ingiere 5 chunks, query, cleanup)
 export DATABRICKS_HOST='https://<workspace-id>.cloud.databricks.com'
@@ -48,19 +48,19 @@ python scripts/smoke_test_databricks.py
 └────────────────────────────────────────┘
 ```
 
-- **Source of truth**: la Delta table `rag_docs.production.<collection>`
+- **Fuente de verdad**: la Delta table `rag_docs.production.<collection>`
   contiene los chunks, metadatos y embeddings pre-computados por BGE-M3.
-- **Vector Search index**: índice `rag_docs.production.<collection>_idx`
+- **Índice de Vector Search**: índice `rag_docs.production.<collection>_idx`
   (sufijo `_idx` para evitar conflicto de nombre con la tabla) sobre
   la columna `embedding` (`ARRAY<FLOAT>`).
-- **Local-side**: el pipeline corre en una máquina con Python y
+- **Lado local**: el pipeline corre en una máquina con Python y
   acceso al workspace vía REST. No requiere cluster dedicado.
 
-## Setup manual (Free Edition)
+## Configuración manual (Free Edition)
 
 ### 1. Crear Personal Access Token (PAT)
 
-1. Databricks workspace → Click en tu avatar (top right) → **User Settings**.
+1. Databricks workspace → Click en tu avatar (arriba a la derecha) → **User Settings**.
 2. **Developer** → **Access tokens** → **Generate new token**.
 3. Nombre: `rag-docs-dev-<fecha>` (recomendable rotar cada 30 días).
 4. Lifetime: el mínimo necesario (Free Edition default es 90 días).
@@ -180,9 +180,9 @@ print(result["citations"])
 
 ## Gotchas que aprendimos en producción
 
-### 1. SDK naming: `AISearchClient` no `VectorSearchClient`
+### 1. Nombres del SDK: `AISearchClient`, no `VectorSearchClient`
 
-`databricks-vectorsearch==0.75` es un **thin re-export** de
+`databricks-vectorsearch==0.75` es un **re-export liviano** de
 `databricks-ai-search==0.78`. Ambos `from databricks.vector_search.client
 import VectorSearchClient` y `from databricks.ai_search.client import
 AISearchClient` resuelven a la misma clase, pero el backend rechaza
@@ -249,7 +249,7 @@ if warehouses:
     return warehouses[0].id
 ```
 
-### 5. Loading order: `.env` antes del cliente
+### 5. Orden de carga: `.env` antes del cliente
 
 El cliente legacy (`VectorSearchClient.__init__` en `databricks-vectorsearch<0.75`)
 llama a `mlflow.utils.databricks_utils.get_databricks_host_creds()` que
@@ -338,16 +338,16 @@ ws.schemas.delete("rag_docs", "production")
 ws.catalogs.delete("rag_docs")
 ```
 
-## Tests
+## Pruebas
 
 | Test | Comando | Tiempo | Qué valida |
 |------|---------|--------|------------|
-| Smoke test (4-dim) | `python scripts/smoke_test_databricks.py` | 3-5 min | Round-trip end-to-end con embeddings dummy |
+| Smoke test (4-dim) | `python scripts/smoke_test_databricks.py` | 3-5 min | Ida y vuelta end-to-end con embeddings dummy |
 | Ingest real | `python -m scripts.ingest --source data/raw --collection spark_docs --rebuild` | 5-10 min | BGE-M3 embed + Delta write + Vector Search sync |
 | Eval light | `python scripts/evaluate_light.py` | 5-10 min | LLM-as-judge (RAGAS full no soportado) |
 | FastAPI local | `python -m uvicorn app.main:app` | inmediato | Endpoint /query end-to-end |
 
-## Troubleshooting
+## Resolución de problemas
 
 ### "UC entity ... already exists"
 
@@ -370,7 +370,7 @@ Estás usando `ARRAY[1.0, 2.0]` con corchetes en INSERT. Usá
 Espera. Si después de 10 min sigue ahí, borra el index y creálo de
 nuevo. A veces el primer sync se atasca.
 
-### PAT rotation
+### Rotación del PAT
 
 Si el PAT se filtró en logs (chat, screenshots, etc.), regenerá
 inmediatamente en User Settings → Developer → Access tokens → Manage →

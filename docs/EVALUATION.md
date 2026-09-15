@@ -1,89 +1,90 @@
-# Evaluation Guide
+# Guía de evaluación
 
-This repo measures retrieval and generation on a **small demo corpus**
-(`data/sample/`, 8 markdowns). Numbers in the README are **historical**
-for that corpus; they do not imply production quality or that hybrid
-“wins” over vector.
+Este repo mide retrieval y generación sobre un **corpus de demo chico**
+(`data/sample/`, 8 markdowns). Los números del README son **históricos**
+para ese corpus; no implican calidad de producción ni que hybrid
+“gane” frente a vector.
 
-**Supported path:** `python scripts/evaluate_light.py` (LLM-as-judge,
-one call per question).
+**Camino soportado:** `python scripts/evaluate_light.py` (LLM-as-judge,
+una call por pregunta).
 
-**Not supported:** full RAGAS via `scripts/evaluate.py`. That script
-prints a disclaimer and often fails on langchain / datasets version
-conflicts. Treat failures as expected.
+**No soportado:** RAGAS full vía `scripts/evaluate.py`. Ese script
+imprime un disclaimer y suele fallar por conflictos de versiones de
+langchain / datasets. Tratá esos fallos como esperados.
 
-Each Q&A in `data/eval/qa_set.json` includes `expected_source` (markdown
-filename). Ablation uses that field; it does not guess the source from
-question text.
+Cada Q&A en `data/eval/qa_set.json` incluye `expected_source` (nombre de
+archivo markdown). La ablation usa ese campo; no adivina la fuente a
+partir del texto de la pregunta.
 
-## The four metrics (light judge)
+## Las cuatro métricas (judge light)
 
-Targets below are **diagnostic hints**, not résumé claims. Precision and
-recall on n≈20 with an LLM judge are **not** achievements.
+Los targets de abajo son **pistas diagnósticas**, no claims de CV.
+Precision y recall con n≈20 y un LLM judge **no** son un logro.
 
 ### 1. Faithfulness
 
-**Question**: Is the answer faithful to the retrieved context, or is the model
-hallucinating?
+**Pregunta**: ¿la respuesta es fiel al contexto recuperado, o el modelo
+está alucinando?
 
-The light judge scores this as a 0–1 from claim support in context (not
-the official RAGAS decomposition pipeline).
+El judge light puntúa esto 0–1 según si las claims están soportadas en
+el contexto (no es el pipeline oficial de descomposición de RAGAS).
 
-**What low faithfulness means**:
-- Prompt is too permissive (model is making things up)
-- Low-quality chunks in the context
-- Chunk boundaries split important context in half
+**Qué implica faithfulness bajo**:
+- El prompt es demasiado permisivo (el modelo inventa)
+- Chunks de baja calidad en el contexto
+- Los límites de chunk parten contexto importante a la mitad
 
 **Fixes**:
-- Lower temperature in the generator
-- Add explicit "answer ONLY from context" instructions
-- Increase overlap in the chunker
+- Bajar la temperatura del generador
+- Agregar instrucciones explícitas de "responder SOLO desde el contexto"
+- Subir el overlap en el chunker
 
 ### 2. Context Precision
 
-**Question**: Are the chunks we retrieved actually relevant to the question?
+**Pregunta**: ¿los chunks que recuperamos son realmente relevantes a la
+pregunta?
 
-On this corpus the historical light score is **low (~0.40)**. That is a
-strict judge + small n, not a ranking of the retriever.
+En este corpus el score light histórico es **bajo (~0.40)**. Eso es
+judge estricto + n chico, no un ranking del retriever.
 
-**What low context precision can mean**:
-- Top-k is high (irrelevant chunks in the window)
-- Judge marks long/comprehensive answers harshly
+**Qué puede implicar context precision bajo**:
+- Top-k alto (chunks irrelevantes en la ventana)
+- El judge penaliza respuestas largas/exhaustivas
 
 ### 3. Context Recall
 
-**Question**: Did we retrieve the information needed to answer the
-question?
+**Pregunta**: ¿recuperamos la información necesaria para responder la
+pregunta?
 
-Historical light score **~0.59** on n=20. Same caveat: do not sell it as
-a retrieval win or loss.
+Score light histórico **~0.59** con n=20. Misma salvedad: no lo vendas
+como victoria o derrota de retrieval.
 
-**What low context recall can mean**:
-- Chunking splits facts across boundaries
-- Top-k is too low
-- Ground truth is more specific than the retrieved snippets
+**Qué puede implicar context recall bajo**:
+- El chunking parte hechos a través de los límites
+- Top-k demasiado bajo
+- El ground truth es más específico que los snippets recuperados
 
 ### 4. Answer Relevancy
 
-**Question**: Is the answer actually addressing the question asked?
+**Pregunta**: ¿la respuesta aborda realmente la pregunta hecha?
 
-The light path approximates this with an LLM score (not RAGAS cosine of
-synthetic questions).
+El camino light lo aproxima con un score de LLM (no el cosine de RAGAS
+sobre preguntas sintéticas).
 
-## Reading the numbers together
+## Cómo leer los números juntos
 
-| Faithfulness | Context Precision | Context Recall | Answer Relevancy | Diagnosis (heuristic) |
+| Faithfulness | Context Precision | Context Recall | Answer Relevancy | Diagnóstico (heurística) |
 |---|---|---|---|---|
-| Low | High | High | Low | Generation problem (prompt or model) |
-| High | Low | High | High | Window/top-k or judge strictness |
-| High | High | Low | High | Chunking / missing facts |
-| Low | Low | Low | Low | Corpus, model, or chunking mismatch |
+| Bajo | Alto | Alto | Bajo | Problema de generación (prompt o modelo) |
+| Alto | Bajo | Alto | Alto | Ventana/top-k o severidad del judge |
+| Alto | Alto | Bajo | Alto | Chunking / hechos faltantes |
+| Bajo | Bajo | Bajo | Bajo | Desajuste de corpus, modelo o chunking |
 
-Ablation Hit@K / MRR on this demo: **hybrid ≈ vector**. Rerank can lower
-Hit@1 and add latency. See README tables; do not treat one run as an
-architecture ranking.
+Ablation Hit@K / MRR en esta demo: **hybrid ≈ vector**. El rerank puede
+bajar Hit@1 y sumar latencia. Ver las tablas del README; no trates una
+corrida como ranking de arquitecturas.
 
-## How to run (supported)
+## Cómo correrlo (soportado)
 
 ```bash
 # Hand-curated set (preferred; has expected_source)
@@ -96,14 +97,14 @@ python scripts/evaluate_light.py
 python scripts/ablation.py --eval-set data/eval/qa_set.json
 ```
 
-Optional: generate extra Q&A with Gemini, then add `expected_source`
-yourself:
+Opcional: generar Q&A extra con Gemini y después agregar `expected_source`
+vos:
 
 ```bash
 python -m scripts.generate_eval_set --collection spark_docs --output data/eval/qa_set.json
 ```
 
-Full RAGAS (unsupported):
+RAGAS full (no soportado):
 
 ```bash
 python -m scripts.evaluate \
@@ -112,16 +113,16 @@ python -m scripts.evaluate \
   --output data/eval/results.json
 ```
 
-## Building a good Q&A set
+## Armar un buen set de Q&A
 
-- Include **`expected_source`** matching a sample markdown filename
+- Incluí **`expected_source`** que coincida con un markdown de sample
   (`delta_lake_intro.md`, `retrieval.md`, …)
-- Ground truth must be answerable from the indexed docs
-- Mix definitional / procedural / comparative questions
-- n=20 on 8 files is enough to smoke-test, not enough to rank systems
+- El ground truth tiene que ser respondible desde los docs indexados
+- Mezclá preguntas definicionales / procedimentales / comparativas
+- n=20 sobre 8 archivos alcanza para un smoke-test, no para rankear sistemas
 
-## When to re-run
+## Cuándo volver a correr
 
-- After changing chunking, embeddings, retriever, rerank, or prompt
-- Diff against the previous baseline on the **same** eval set
-- If some metrics rise and others fall, that is a product trade-off
+- Después de cambiar chunking, embeddings, retriever, rerank o prompt
+- Diff contra el baseline anterior sobre el **mismo** eval set
+- Si algunas métricas suben y otras bajan, es un trade-off de producto

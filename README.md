@@ -9,7 +9,7 @@
 ![Deploy](https://img.shields.io/badge/Databricks%20Vector%20Search-optional-blue)
 ![CI](https://github.com/franco18min/rag-docs/actions/workflows/ci.yml/badge.svg)
 
-![Streamlit demo: query "¿Qué garantías ACID ofrece Delta Lake?" with full citation-backed response](docs/img/streamlit-demo.jpg)
+![Demo Streamlit: query "¿Qué garantías ACID ofrece Delta Lake?" con respuesta citada a las fuentes](docs/img/streamlit-demo.jpg)
 
 ---
 
@@ -72,7 +72,7 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 
 ---
 
-## Tech Stack (todo gratis)
+## Stack técnico (todo gratis)
 
 | Componente | Herramienta | Costo |
 |---|---|---|
@@ -80,19 +80,19 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 | **Embeddings** | HuggingFace `BAAI/bge-m3` (local, 1024-dim, multilingüe) | $0 |
 | **Re-ranker** | HuggingFace `BAAI/bge-reranker-base` (local) | $0 |
 | **Vector DB** | Chroma (local) / Databricks Vector Search (opcional) | $0 |
-| **Keyword search** | rank-bm25 (local, persistido a disco) | $0 |
+| **Búsqueda por keywords** | rank-bm25 (local, persistido a disco) | $0 |
 | **Backend** | FastAPI + Uvicorn | $0 |
-| **Frontend demo** | Streamlit | $0 |
+| **Demo frontend** | Streamlit | $0 |
 | **Chunking** | tiktoken (cl100k_base) | $0 |
-| **Evaluation** | `evaluate_light.py` (LLM-as-judge); full RAGAS no soportado | $0 |
-| **Observability** | Langfuse **no implementado** (`trace_id` siempre `None`) | $0 |
-| **Local stack** | Docker + Docker Compose (API + Streamlit) | $0 |
+| **Evaluación** | `evaluate_light.py` (LLM-as-judge); full RAGAS no soportado | $0 |
+| **Observabilidad** | Langfuse **no implementado** (`trace_id` siempre `None`) | $0 |
+| **Stack local** | Docker + Docker Compose (API + Streamlit) | $0 |
 
 **Costo total para construir + demostrar: USD 0**
 
 ---
 
-## Quick Start (10 minutos al primer query)
+## Arranque rápido (10 minutos al primer query)
 
 ### 1. Setup
 
@@ -160,7 +160,7 @@ Respuesta esperada:
 }
 ```
 
-### 4. UI demo
+### 4. Demo de UI
 
 ```bash
 # En otra terminal, con el venv activado
@@ -281,7 +281,7 @@ rag-docs/
 
 ---
 
-## Features implementadas
+## Funcionalidades implementadas
 
 ### Core (MVP) — listo y funcionando
 - [x] Ingesta de PDFs, Markdown, HTML, TXT
@@ -299,7 +299,7 @@ rag-docs/
 - [x] Auto-generación de Q&A con Gemini para eval
 - [x] Tests unitarios (chunker, hybrid search, pipeline)
 - [x] Dockerfile + docker-compose
-- [x] Documentación: ARCHITECTURE, EVALUATION
+- [x] Documentación: arquitectura, evaluación
 
 ---
 

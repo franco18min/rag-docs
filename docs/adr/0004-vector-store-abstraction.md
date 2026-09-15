@@ -24,10 +24,10 @@ def get_vector_store():
 ```
 
 ## Razones
-1. **Dev experience**: la mayoría del desarrollo ocurre local sin Databricks. Chroma arranca en 2 segundos.
-2. **Production-grade**: Databricks Vector Search ofrece Delta sync, governance con Unity Catalog, IAM via el workspace.
-3. **Mismo interface**: `add()`, `query()`, `list_collections()` en ambos. El pipeline no sabe cuál está usando.
-4. **Test-friendly**: los tests usan Chroma (in-memory) sin credenciales de Databricks.
+1. **Experiencia de desarrollo**: la mayoría del desarrollo ocurre local sin Databricks. Chroma arranca en 2 segundos.
+2. **Nivel producción**: Databricks Vector Search ofrece Delta sync, governance con Unity Catalog, IAM via el workspace.
+3. **Misma interfaz**: `add()`, `query()`, `list_collections()` en ambos. El pipeline no sabe cuál está usando.
+4. **Amigable para tests**: los tests usan Chroma (in-memory) sin credenciales de Databricks.
 5. **Costo cero en dev**: Chroma corre sin servicios externos.
 
 ## Trade-offs

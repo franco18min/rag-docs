@@ -1,27 +1,27 @@
-# Architecture & Technical Decisions
+# Arquitectura y decisiones técnicas
 
-This document explains *why* the system is built the way it is — the trade-offs
-considered, the alternatives rejected, and the design choices that affect
-quality, cost, and maintainability.
+Este documento explica *por qué* el sistema está armado así: trade-offs
+considerados, alternativas descartadas y elecciones de diseño que afectan
+calidad, costo y mantenibilidad.
 
-## Pipeline Overview
+## Vista general del pipeline
 
 ```
                    ┌─────────────┐
-                   │  Documents  │  PDF / Markdown / HTML / TXT
+                   │  Documentos │  PDF / Markdown / HTML / TXT
                    └──────┬──────┘
-                          │ 1. Load (per-format readers)
+                          │ 1. Load (readers por formato)
                           ▼
                    ┌─────────────┐
                    │  Chunking   │  tiktoken, sliding window 512/64
-                   └──────┬──────┘  with rich metadata
-                          │ 2. Embed (BGE-M3, normalized, 1024-dim)
+                   └──────┬──────┘  con metadata rica
+                          │ 2. Embed (BGE-M3, normalizado, 1024-dim)
                           ▼
               ┌───────────────────────┐
               │   Vector (Chroma)     │  cosine similarity
-              │   +  BM25 index       │  lexical exact match
+              │   +  BM25 index       │  match léxico exacto
               └──────────┬────────────┘
-                         │ 3. Hybrid retrieval (top-20 each)
+                         │ 3. Retrieval híbrido (top-20 cada uno)
                          ▼
               ┌─────────────────────┐
               │  RRF fusion         │  Reciprocal Rank Fusion, k=60
@@ -29,132 +29,139 @@ quality, cost, and maintainability.
                          │ 4. Rerank (opt-in; BGE-reranker, top-20 → top-5)
                          ▼
               ┌─────────────────────┐
-              │  Gemini Flash-Lite  │  Grounded answer with [#N] citations
+              │  Gemini Flash-Lite  │  Respuesta grounded con citas [#N]
               └──────────┬──────────┘
                          │ 5. Response (answer + citations + scores)
                          ▼
                     {answer, citations, latency_ms, model}
 ```
 
-## Key Decisions
+## Decisiones clave
 
-### 1. Hybrid search (BM25 + dense) with RRF
+### 1. Búsqueda híbrida (BM25 + vector denso) con RRF
 
-**Why not pure dense retrieval?**
-Embeddings are great for semantic similarity but struggle with exact-match
-queries. In technical documentation, users often search for specific terms:
-function names, error codes, config flags, version numbers. BM25 nails those.
+**¿Por qué no solo retrieval denso?**
+Los embeddings andan bien para similitud semántica, pero se traban con
+queries de match exacto. En documentación técnica la gente busca términos
+concretos: nombres de función, códigos de error, flags de config, números
+de versión. BM25 clava esos casos.
 
-**Why RRF instead of weighted score fusion?**
-Reciprocal Rank Fusion is a rank-aggregation method — it doesn't need the
-two retrievers' scores to be calibrated to the same scale. That's the
-operational pain with weighted score fusion (BM25 scores are unbounded;
-cosine similarity is in [-1, 1]).
+**¿Por qué RRF en vez de fusión ponderada de scores?**
+Reciprocal Rank Fusion agrega rangos: no hace falta calibrar los scores
+de los dos retrievers a la misma escala. Ese es el dolor operativo de la
+fusión ponderada (los scores de BM25 no tienen cota; cosine similarity
+vive en [-1, 1]).
 
-RRF formula:
+Fórmula RRF:
 ```
 rrf(d) = Σ_r 1 / (k + rank_r(d))
 ```
-We use `k=60` (the value from the original Cormack et al. SIGIR 2009 paper).
+Usamos `k=60` (el valor del paper original de Cormack et al., SIGIR 2009).
 
-**Trade-off**: two retrievers means two indexes and more memory. For our
-demo-scale corpora this is negligible. At 10M+ chunks, you'd consolidate
-into a single dense index + keyword filter or move to a hybrid-native engine
-like Weaviate or Qdrant.
+**Trade-off**: dos retrievers implican dos índices y más memoria. A escala
+de demo es despreciable. Con 10M+ chunks conviene consolidar en un índice
+denso + filtro de keywords, o pasar a un motor híbrido nativo como
+Weaviate o Qdrant.
 
-### 2. Cross-encoder re-ranker on top of hybrid
+### 2. Cross-encoder re-ranker encima del híbrido
 
-**Why not skip re-ranking?**
-Bi-encoders (BGE-M3) embed query and document independently — fast, but
-they don't capture fine-grained query↔document interaction.
+**¿Por qué no saltearse el re-ranking?**
+Los bi-encoders (BGE-M3) embeddean query y documento por separado: es
+rápido, pero no capturan la interacción fina query↔documento.
 
-Cross-encoders (BGE-reranker-base) jointly encode the pair and output a
-relevance score. They're ~10x more accurate on the top of the ranking, but
-~100x slower — so we only apply them to the top-20 from hybrid, output
-top-5.
+Los cross-encoders (BGE-reranker-base) codifican el par junto y devuelven
+un score de relevancia. Son ~10× más precisos en la cabeza del ranking,
+pero ~100× más lentos: por eso solo los aplicamos al top-20 del híbrido
+y devolvemos top-5.
 
-Published BGE reranker papers report large nDCG gains on public IR
-benchmarks. **This repo does not claim a +20–30% nDCG lift** on the demo
-corpus. Local ablation on 20 Q&A showed Hit@1 dropping with rerank and
-~50× latency on CPU. Default: `ENABLE_RERANK=false`.
+Los papers publicados de BGE reranker reportan ganancias grandes de nDCG
+en benchmarks públicos de IR. **Este repo no afirma un lift de +20–30%
+nDCG** sobre el corpus de demo. La ablation local en 20 Q&A mostró que
+Hit@1 baja con rerank y ~50× de latencia en CPU. Default:
+`ENABLE_RERANK=false`.
 
-**Trade-off**: rerank is opt-in; enable only when the corpus and latency
-budget justify loading the cross-encoder.
+**Trade-off**: el rerank es opt-in; habilitalo solo cuando el corpus y el
+presupuesto de latencia justifiquen cargar el cross-encoder.
 
 ### 3. Sliding window 512/64
 
-**Why 512 tokens?**
-- Long enough to capture a self-contained concept (a paragraph, a config block)
-- Short enough to keep embedding cost low (BGE-M3 has 8K context but most
-  useful signal is in the first 512 tokens)
-- Aligned with the chunk size most RAG tutorials use, so when comparing
-  numbers to public benchmarks we're apples-to-apples
+**¿Por qué 512 tokens?**
+- Lo bastante largo para un concepto autónomo (un párrafo, un bloque de config)
+- Lo bastante corto para mantener bajo el costo de embedding (BGE-M3 tiene
+  contexto de 8K, pero la señal útil suele estar en los primeros 512 tokens)
+- Alineado con el tamaño de chunk de la mayoría de tutoriales RAG, así
+  al comparar números con benchmarks públicos comparamos peras con peras
 
-**Why 64 tokens overlap (~12.5%)?**
-- High enough that no semantic boundary falls in a dead zone between chunks
-- Low enough that we don't 8x our index for marginal recall gain
+**¿Por qué overlap de 64 tokens (~12.5%)?**
+- Alto suficiente para que ningún límite semántico caiga en una zona
+  muerta entre chunks
+- Bajo suficiente para no multiplicar el índice por 8 a cambio de un
+  recall marginal
 
-**Alternatives considered**:
-- **Sentence-based splitting** (NLTK, spacy) — but our docs mix Spanish and
-  English and have lots of code blocks, which mess up sentence detection.
-- **Semantic chunking** (split when embedding similarity drops) — too slow at
-  ingest for this demo corpus, and not noticeably better in practice.
+**Alternativas consideradas**:
+- **Split por oraciones** (NLTK, spacy) — pero los docs mezclan español e
+  inglés y tienen muchos bloques de código, que rompen la detección de
+  oraciones.
+- **Chunking semántico** (cortar cuando baja la similitud de embedding) —
+  demasiado lento en ingest para este corpus de demo, y en la práctica
+  no se nota claramente mejor.
 
-### 4. BGE-M3 (multilingual, long-context)
+### 4. BGE-M3 (multilingüe, contexto largo)
 
-**Why BGE-M3 over OpenAI `text-embedding-3-small`?**
-- Runs locally → no per-query cost, no API latency
-- Multilingual (100+ languages, strong on Spanish) — important for our use case
-- Long context (8K tokens) → can re-embed a chunk without truncation
+**¿Por qué BGE-M3 frente a OpenAI `text-embedding-3-small`?**
+- Corre local → sin costo por query, sin latencia de API
+- Multilingüe (100+ idiomas, fuerte en español) — importante para nuestro caso
+- Contexto largo (8K tokens) → se puede re-embeddear un chunk sin truncar
 
-**Trade-off**: ~400MB to download, ~1GB RAM to run, ~50ms per chunk on CPU.
-For 300 documents × 5 chunks each = 1500 chunks, ingest is ~1.5 minutes.
+**Trade-off**: ~400MB de descarga, ~1GB de RAM, ~50ms por chunk en CPU.
+Para 300 documentos × 5 chunks = 1500 chunks, el ingest lleva ~1.5 minutos.
 
-### 5. Gemini Flash-Lite for generation
+### 5. Gemini Flash-Lite para generación
 
-Default model id: `gemini-flash-lite-latest`.
+Id de modelo por default: `gemini-flash-lite-latest`.
 
-**Why not GPT-4o / Claude?**
-- Free tier (1,500 req/day) is enough for evaluation runs and demos
-- Fast (~1s for 500-token answers)
-- Good enough on technical Q&A (not state-of-the-art, but >90% of GPT-4o on
-  our eval set)
+**¿Por qué no GPT-4o / Claude?**
+- El free tier (1,500 req/día) alcanza para corridas de evaluación y demos
+- Rápido (~1s para respuestas de 500 tokens)
+- Suficiente en Q&A técnico (no es state-of-the-art, pero >90% de GPT-4o
+  en nuestro eval set)
 
-**Why structured prompting?**
-- Force the model to cite chunks with `[#N]` so we can map citations back to
-  retrieved sources
-- Explicit "I don't know" path when the context doesn't contain the answer
-  (avoids hallucination)
-- Low temperature (0.2) for grounded, deterministic answers
+**¿Por qué prompting estructurado?**
+- Forzar al modelo a citar chunks con `[#N]` para mapear citas a fuentes
+  recuperadas
+- Camino explícito de "no sé" cuando el contexto no contiene la respuesta
+  (evita alucinación)
+- Temperatura baja (0.2) para respuestas grounded y deterministas
 
-### 6. Chroma (dev) and Databricks Vector Search (optional)
+### 6. Chroma (dev) y Databricks Vector Search (opcional)
 
-**Why Chroma for the MVP?**
-- Zero ops, runs in-process, persists to disk
-- Thin `VectorStore` interface shared with the Databricks adapter
-- Lets us focus on the pipeline, not infrastructure
+**¿Por qué Chroma para el MVP?**
+- Cero ops, corre in-process, persiste a disco
+- Interfaz delgada `VectorStore` compartida con el adapter de Databricks
+- Permite enfocarnos en el pipeline, no en infraestructura
 
-**Current path:** `VECTOR_STORE_BACKEND=chroma` (default) or `databricks`.
-There is **no pgvector backend** in this repo.
+**Camino actual:** `VECTOR_STORE_BACKEND=chroma` (default) o `databricks`.
+**No hay backend pgvector** en este repo.
 
-**When Databricks is useful**:
-- Demo against Unity Catalog / Vector Search
-- Need for a remote index instead of local Chroma files
+**Cuándo Databricks aporta**:
+- Demo contra Unity Catalog / Vector Search
+- Necesidad de un índice remoto en vez de archivos locales de Chroma
 
-## What's intentionally NOT here (yet)
+## Qué NO está a propósito (todavía)
 
-- **Streaming responses**: Gemini supports it; we return the full answer.
-  Easy add with `model.generate_content(..., stream=True)`.
-- **Conversational memory**: each query is independent. Multi-turn needs a
-  query reformulation step + history-aware retriever.
-- **Caching of common queries**: a Redis layer in front of `/query` would
-  cut latency to ~10ms for hot queries.
-- **A/B testing of prompts**: the prompt is in `generator.py`.
-- **Langfuse / distributed tracing**: not implemented. `QueryResponse.trace_id`
-  is always `None`.
-- **Full RAGAS**: not supported; use `scripts/evaluate_light.py`.
+- **Respuestas en streaming**: Gemini lo soporta; nosotros devolvemos la
+  respuesta completa. Fácil de agregar con
+  `model.generate_content(..., stream=True)`.
+- **Memoria conversacional**: cada query es independiente. Multi-turno
+  necesita reformulación de query + retriever con historia.
+- **Caché de queries frecuentes**: una capa Redis delante de `/query`
+  bajaría la latencia a ~10ms en queries calientes.
+- **A/B de prompts**: el prompt está en `generator.py`.
+- **Langfuse / tracing distribuido**: no implementado.
+  `QueryResponse.trace_id` es siempre `None`.
+- **RAGAS full**: no soportado; usar `scripts/evaluate_light.py`.
 
-## Component dependency graph
+## Grafo de dependencias de componentes
 
 ```
 pipeline.py
@@ -167,5 +174,6 @@ pipeline.py
 └── generator.py        (depends on: config, google-generativeai)
 ```
 
-Every core module is independently importable and unit-testable. The pipeline
-accepts constructor injection of any dependency, so tests can swap fakes.
+Cada módulo de core se puede importar y testear por separado. El pipeline
+acepta inyección de dependencias por constructor, así los tests pueden
+cambiar fakes.

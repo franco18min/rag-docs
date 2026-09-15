@@ -24,7 +24,7 @@ RERANKER_MODEL=BAAI/bge-reranker-base
 ## Ablation
 Ver `scripts/ablation.py`. Para nuestro corpus de 18 chunks:
 
-| Config | Hit@1 | Hit@3 | Latencia |
+| Configuración | Hit@1 | Hit@3 | Latencia |
 |--------|-------|-------|----------|
 | hybrid sin rerank | 0.900 | 0.900 | 77ms |
 | hybrid + rerank | 0.850 | 0.900 | 5086ms |
@@ -43,7 +43,7 @@ Ver `scripts/ablation.py`. Para nuestro corpus de 18 chunks:
 ## Consecuencias
 - **Positivas**: mejor precisión en el caso general (corpus grande, queries complejas).
 - **Negativas**: 50x más latencia. En CPU, 5s por query. No viable para UX de tiempo real sin GPU.
-- **Mitigación**: en producción se sirve el rerank con GPU. Para demo local, se puede desactivar vía `TOP_K_RERANK=0` (skip) o `RERANKER_MODEL=` (empty).
+- **Mitigación**: en producción se sirve el rerank con GPU. Para demo local, se puede desactivar vía `TOP_K_RERANK=0` (omitir) o `RERANKER_MODEL=` (vacío).
 
 ## Experimentos pendientes
 - Evaluar con corpus sintético de 1000+ chunks para ver cuándo el rerank empieza a pagar.
