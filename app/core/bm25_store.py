@@ -31,6 +31,7 @@ class BM25Store:
         self.bm25: BM25Okapi | None = None
         self.docs: list[dict] = []  # each: {id, text, metadata}
         self._loaded = False
+        self._collection: str | None = None
 
     # ------------------------------------------------------------------
     # Persistence
@@ -49,12 +50,14 @@ class BM25Store:
         path = self._persist_path_for(collection)
         if not path.exists():
             self._loaded = False
+            self._collection = None
             return False
         with open(path, "rb") as f:
             data = pickle.load(f)
         self.bm25 = data["bm25"]
         self.docs = data["docs"]
         self._loaded = True
+        self._collection = collection
         return True
 
     def is_loaded(self) -> bool:
@@ -74,6 +77,7 @@ class BM25Store:
             self.bm25 = None
             self.docs = []
             self._loaded = True
+            self._collection = collection
             self.save(collection)
             return 0
 
@@ -81,17 +85,28 @@ class BM25Store:
         self.bm25 = BM25Okapi(tokenized_corpus)
         self.docs = chunks
         self._loaded = True
+        self._collection = collection
         self.save(collection)
         return len(chunks)
 
     # ------------------------------------------------------------------
     # Retrieval
     # ------------------------------------------------------------------
-    def query(self, query_text: str, top_k: int = 20) -> list[dict]:
+    def query(
+        self,
+        query_text: str,
+        top_k: int = 20,
+        collection: str | None = None,
+    ) -> list[dict]:
         """Return top-k most relevant chunks by BM25 score.
 
         Each result: {id, text, metadata, score, source_retriever}.
+        If ``collection`` is set, load that collection's pickle when it is
+        not already in memory.
         """
+        if collection and self._collection != collection:
+            if not self.load(collection):
+                return []
         if not self.is_loaded() or not self.docs:
             return []
 

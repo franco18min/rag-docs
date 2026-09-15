@@ -19,6 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.config import settings
+from app.core.generator import parse_citations
 from app.core.pipeline import RAGPipeline
 from app.models.query import IngestRequest, QueryRequest
 from app.models.response import HealthResponse, IngestResponse, QueryResponse
@@ -106,11 +107,14 @@ async def query(request: QueryRequest):
             collection=request.collection,
             top_k=request.top_k,
         )
+        chunks = result.get("chunks") or []
         if not request.include_citations:
-            result["citations"] = []
+            citations = []
+        else:
+            citations = parse_citations(result["answer"], chunks)
         return QueryResponse(
             answer=result["answer"],
-            citations=result["citations"],
+            citations=citations,
             trace_id=None,  # Langfuse integration is optional; filled in observability/tracing.py
             latency_ms=result["latency_ms"],
             model=result["model"],

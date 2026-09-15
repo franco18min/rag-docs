@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # ===== LLM =====
     google_api_key: str = Field(default="", alias="GOOGLE_API_KEY")
-    gemini_model: str = Field(default="gemini-2.0-flash-exp", alias="GEMINI_MODEL")
+    gemini_model: str = Field(default="gemini-flash-lite-latest", alias="GEMINI_MODEL")
 
     # ===== Embeddings & Reranking =====
     embedding_model: str = Field(default="BAAI/bge-m3", alias="EMBEDDING_MODEL")
@@ -48,6 +48,7 @@ class Settings(BaseSettings):
     top_k_vector: int = Field(default=20, alias="TOP_K_VECTOR")
     top_k_bm25: int = Field(default=20, alias="TOP_K_BM25")
     top_k_rerank: int = Field(default=5, alias="TOP_K_RERANK")
+    enable_rerank: bool = Field(default=False, alias="ENABLE_RERANK")
     rrf_k: int = Field(default=60, alias="RRF_K")
 
     # ===== API =====

@@ -7,9 +7,17 @@ claim in the provided context.
 """
 from __future__ import annotations
 
+import logging
+import re
+
 import google.generativeai as genai
 
 from app.config import settings
+
+logger = logging.getLogger(__name__)
+
+# 1-based citation markers as they appear in the model answer, e.g. [#2].
+_CITATION_RE = re.compile(r"\[#(\d+)\]")
 
 SYSTEM_INSTRUCTION = """Sos un asistente técnico que responde preguntas sobre documentación técnica.
 Reglas estrictas:
@@ -92,15 +100,82 @@ class Generator:
 
     @staticmethod
     def _format_context(chunks: list[dict]) -> str:
-        """Format chunks as numbered context blocks."""
+        """Format chunks as numbered context blocks ``[#N] [Fuente: ...]``."""
         parts: list[str] = []
-        for _i, c in enumerate(chunks, start=1):
+        for i, c in enumerate(chunks, start=1):
             md = c.get("metadata", {}) or {}
             source = md.get("source", "unknown")
             section = md.get("section") or ""
-            header = f"[Fuente: {source}"
+            header = f"[#{i}] [Fuente: {source}"
             if section:
                 header += f" — Sección: {section}"
             header += "]"
             parts.append(f"{header}\n{c.get('text', '').strip()}\n")
         return "\n".join(parts)
+
+
+def _chunk_to_citation(chunk: dict, citation_number: int) -> dict:
+    """Map a retrieved chunk dict to a Citation-compatible payload."""
+    md = chunk.get("metadata") or {}
+    text = (chunk.get("text") or "").strip()
+    snippet = text[:500]
+    score = chunk.get("score", md.get("score", 0.0))
+    try:
+        score = float(score)
+    except (TypeError, ValueError):
+        score = 0.0
+    page = md.get("page")
+    if page is not None:
+        try:
+            page = int(page)
+        except (TypeError, ValueError):
+            page = None
+    chunk_index = md.get("chunk_index")
+    if chunk_index is not None:
+        try:
+            chunk_index = int(chunk_index)
+        except (TypeError, ValueError):
+            chunk_index = None
+    return {
+        "source": md.get("source") or "unknown",
+        "section": md.get("section"),
+        "page": page,
+        "chunk_index": chunk_index,
+        "text_snippet": snippet,
+        "score": score,
+        "citation_number": citation_number,
+    }
+
+
+def parse_citations(answer: str, context_chunks: list[dict]) -> list[dict]:
+    """Select citations from ``[#N]`` markers in ``answer``.
+
+    ``N`` is 1-based and indexes ``context_chunks`` in the same order used by
+    ``Generator._format_context``. Markers are kept in **order of first
+    appearance** in the answer; duplicate ``N`` values are ignored. Out-of-range
+    ``N`` is skipped.
+
+    If no valid markers are found, returns the full top-k list (one citation
+    per chunk, numbered 1..k) and logs a warning.
+    """
+    seen: set[int] = set()
+    numbers: list[int] = []
+    for match in _CITATION_RE.finditer(answer or ""):
+        n = int(match.group(1))
+        if n in seen:
+            continue
+        if 1 <= n <= len(context_chunks):
+            seen.add(n)
+            numbers.append(n)
+
+    if not numbers:
+        logger.warning(
+            "No parseable [#N] citations in the generated answer; "
+            "falling back to top-k context chunks"
+        )
+        return [
+            _chunk_to_citation(chunk, i)
+            for i, chunk in enumerate(context_chunks, start=1)
+        ]
+
+    return [_chunk_to_citation(context_chunks[n - 1], n) for n in numbers]

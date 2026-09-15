@@ -103,7 +103,8 @@ class RAGPipeline:
         )
 
         if show_progress:
-            logger.info("Indexing in Chroma...")
+            backend = settings.vector_store_backend
+            logger.info("Indexing in %s...", backend)
         self.vector_store.add(
             collection=collection,
             ids=[c["id"] for c in chunk_dicts],
@@ -143,7 +144,8 @@ class RAGPipeline:
         """
         start = time.time()
         coll = collection or settings.collection_name
-        top_k = top_k or settings.top_k_rerank
+        if top_k is None:
+            top_k = settings.top_k_rerank
 
         # 1. Embed the query
         query_embedding = self.embedder.embed_query(question).tolist()

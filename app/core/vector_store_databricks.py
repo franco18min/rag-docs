@@ -33,6 +33,13 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
+def _sanitize_metadata(meta: dict | None) -> dict:
+    """Drop None values so JSON/Delta metadata stays Chroma-compatible."""
+    if not isinstance(meta, dict):
+        return {}
+    return {k: v for k, v in meta.items() if v is not None}
+
+
 class DatabricksVectorStore:
     """Adapter exposing the same API as ``VectorStore`` but on Databricks."""
 
@@ -276,9 +283,10 @@ class DatabricksVectorStore:
         # single-row-per-INSERT path because the parser has the same bug
         # with multi-row VALUES tuples containing array literals.
         for _id, emb, doc, meta in zip(ids, embeddings, documents, metadatas, strict=False):
-            chunk_index = int(meta.get("chunk_index", 0)) if isinstance(meta, dict) else 0
-            source = str(meta.get("source", "")) if isinstance(meta, dict) else ""
-            meta_json = _json.dumps(meta, ensure_ascii=False) if isinstance(meta, dict) else "{}"
+            meta = _sanitize_metadata(meta if isinstance(meta, dict) else None)
+            chunk_index = int(meta.get("chunk_index", 0))
+            source = str(meta.get("source", ""))
+            meta_json = _json.dumps(meta, ensure_ascii=False)
             emb_str = ", ".join(f"{float(x):.7f}" for x in emb)
             doc_escaped = doc.replace("'", "''")
             meta_escaped = meta_json.replace("'", "''")
@@ -293,9 +301,10 @@ class DatabricksVectorStore:
         # single-row-per-INSERT path because the parser has the same bug
         # with multi-row VALUES tuples containing array literals.
         for _id, emb, doc, meta in zip(ids, embeddings, documents, metadatas, strict=False):
-            chunk_index = int(meta.get("chunk_index", 0)) if isinstance(meta, dict) else 0
-            source = str(meta.get("source", "")) if isinstance(meta, dict) else ""
-            meta_json = _json.dumps(meta, ensure_ascii=False) if isinstance(meta, dict) else "{}"
+            meta = _sanitize_metadata(meta if isinstance(meta, dict) else None)
+            chunk_index = int(meta.get("chunk_index", 0))
+            source = str(meta.get("source", ""))
+            meta_json = _json.dumps(meta, ensure_ascii=False)
             emb_str = ", ".join(f"{float(x):.7f}" for x in emb)
             doc_escaped = doc.replace("'", "''")
             meta_escaped = meta_json.replace("'", "''")

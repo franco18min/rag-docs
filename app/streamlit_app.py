@@ -133,8 +133,9 @@ def main():
     if show_chunks and citations:
         st.subheader("Citas")
         for i, c in enumerate(citations, start=1):
+            n = c.get("citation_number") or i
             with st.expander(
-                f"#{i} — {c.get('source', '?').split('/')[-1]}  ·  score {c.get('score', 0):.3f}"
+                f"#{n} — {c.get('source', '?').split('/')[-1]}  ·  score {c.get('score', 0):.3f}"
             ):
                 if c.get("section"):
                     st.caption(f"Sección: {c['section']}")

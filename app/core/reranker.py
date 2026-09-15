@@ -13,9 +13,17 @@ import os
 # Silence HF noise
 os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
 
-from sentence_transformers import CrossEncoder
-
 from app.config import settings
+
+
+def _hybrid_slice(candidates: list[dict], top_k: int | None) -> list[dict]:
+    """Keep hybrid fusion order. Never slice to an empty list when candidates exist."""
+    if not candidates:
+        return []
+    k = settings.top_k_rerank if top_k is None else top_k
+    if k is None or k <= 0:
+        return list(candidates)
+    return candidates[: min(k, len(candidates))]
 
 
 class Reranker:
@@ -32,8 +40,21 @@ class Reranker:
         if getattr(self, "_initialized", False):
             return
         self.model_name = model_name or settings.reranker_model
-        self.model = CrossEncoder(self.model_name)
+        self._model = None
         self._initialized = True
+
+    def _get_model(self):
+        if self._model is None:
+            from sentence_transformers import CrossEncoder
+
+            self._model = CrossEncoder(self.model_name)
+        return self._model
+
+    def _should_skip_cross_encoder(self, top_k: int | None) -> bool:
+        if not settings.enable_rerank:
+            return True
+        k = settings.top_k_rerank if top_k is None else top_k
+        return k is None or k <= 0
 
     def rerank(
         self,
@@ -48,6 +69,9 @@ class Reranker:
         score) and updates ``score`` to the normalized rank-fusion+rerank
         score in [0, 1].
 
+        When rerank is disabled or ``top_k`` / ``TOP_K_RERANK`` is 0, the
+        hybrid ranking is returned (never an empty slice of a non-empty list).
+
         Args:
             query: The query string.
             candidates: List of candidate dicts from hybrid search.
@@ -56,17 +80,20 @@ class Reranker:
         if not candidates:
             return []
 
-        top_k = top_k or settings.top_k_rerank
-        top_k = min(top_k, len(candidates))
+        if self._should_skip_cross_encoder(top_k):
+            return _hybrid_slice(candidates, top_k)
+
+        k = settings.top_k_rerank if top_k is None else top_k
+        k = min(k, len(candidates))
 
         pairs = [(query, c.get("text", "")) for c in candidates]
-        raw_scores = self.model.predict(pairs, show_progress_bar=False)
+        raw_scores = self._get_model().predict(pairs, show_progress_bar=False)
 
         # Attach scores and sort
         for c, s in zip(candidates, raw_scores, strict=False):
             c["rerank_score"] = float(s)
 
-        sorted_candidates = sorted(candidates, key=lambda c: c["rerank_score"], reverse=True)[:top_k]
+        sorted_candidates = sorted(candidates, key=lambda c: c["rerank_score"], reverse=True)[:k]
 
         # Normalize rerank scores in [0, 1]
         if sorted_candidates:

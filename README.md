@@ -96,15 +96,14 @@ Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deplo
 
 ### 1. Setup
 
+**Unix / macOS**
+
 ```bash
-# Clonar / descargar
-cd "C:\Users\magna\Downloads\RAG Docs"
+cd rag-docs
 
-# Crear entorno virtual
 python -m venv venv
-.\venv\Scripts\Activate.ps1
+source venv/bin/activate
 
-# Instalar dependencias
 pip install -r requirements.txt
 
 # Configurar API key de Gemini (gratis)
@@ -113,14 +112,27 @@ cp .env.example .env
 # Editá .env y poné tu GOOGLE_API_KEY
 ```
 
+**Windows (PowerShell)**
+
+```powershell
+cd rag-docs
+
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+
+Copy-Item .env.example .env
+# Editá .env y poné tu GOOGLE_API_KEY
+```
+
 ### 2. Ingerir documentos
 
-```bash
-# Bajate un PDF o Markdown a data/raw/ primero
-# Por ejemplo: la doc de Spark, dbt, Databricks, lo que conozcas
+El corpus de demo está en `data/sample/` (markdowns de Spark / Delta / Vector Search).
 
+```bash
 # Ingerir (rebuild=True si querés empezar de cero)
-python -m scripts.ingest --source ./data/raw --collection spark_docs
+python -m scripts.ingest --source ./data/sample --collection spark_docs
 ```
 
 Vas a ver: chunking → embedding → indexing. Cuando termine: `Ingest complete: 247 chunks from 8 documents in 12.4s`.

@@ -12,6 +12,10 @@ class Citation(BaseModel):
     chunk_index: int | None = Field(default=None, description="Index of the chunk within the document")
     text_snippet: str = Field(..., description="Short snippet of the cited text")
     score: float = Field(..., description="Relevance score (0-1)")
+    citation_number: int | None = Field(
+        default=None,
+        description="1-based [#N] index matching the answer and context blocks",
+    )
 
 
 class QueryResponse(BaseModel):

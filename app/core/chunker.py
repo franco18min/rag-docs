@@ -148,19 +148,21 @@ class Chunker:
         end_token: int,
         extra: dict | None,
     ) -> Chunk:
+        metadata = {
+            "source": source,
+            "section": section,
+            "chunk_index": idx,
+            "total_chunks": total,
+            "start_token": start_token,
+            "end_token": end_token,
+            "num_tokens": end_token - start_token,
+            **(extra or {}),
+        }
+        metadata = {k: v for k, v in metadata.items() if v is not None}
         return Chunk(
             text=text,
             chunk_id=self._make_chunk_id(text, source, idx),
-            metadata={
-                "source": source,
-                "section": section,
-                "chunk_index": idx,
-                "total_chunks": total,
-                "start_token": start_token,
-                "end_token": end_token,
-                "num_tokens": end_token - start_token,
-                **(extra or {}),
-            },
+            metadata=metadata,
         )
 
     @staticmethod

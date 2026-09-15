@@ -16,6 +16,17 @@ from chromadb.config import Settings as ChromaSettings
 from app.config import settings
 
 
+def _sanitize_metadatas(metadatas: list[dict]) -> list[dict]:
+    """Drop None values — Chroma rejects them in metadata maps."""
+    cleaned: list[dict] = []
+    for meta in metadatas:
+        if not isinstance(meta, dict):
+            cleaned.append({})
+            continue
+        cleaned.append({k: v for k, v in meta.items() if v is not None})
+    return cleaned
+
+
 class VectorStore:
     """Thin wrapper around Chroma for add/query/list operations."""
 
@@ -75,7 +86,7 @@ class VectorStore:
             ids=ids,
             embeddings=embeddings,
             documents=documents,
-            metadatas=metadatas,
+            metadatas=_sanitize_metadatas(metadatas),
         )
 
     # ------------------------------------------------------------------
