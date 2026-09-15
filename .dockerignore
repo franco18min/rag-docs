@@ -15,7 +15,13 @@ htmlcov
 .env.*
 !.env.example
 tests
-data
+data/raw
+data/chroma
+data/processed
+data/eval
+data/*.pkl
+!data/sample
+!data/sample/**
 *.egg-info
 .idea
 .vscode

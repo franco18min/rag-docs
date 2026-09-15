@@ -354,11 +354,11 @@ fly launch
 fly deploy
 ```
 
-### Opción D: HuggingFace Spaces
+### Opción D: Hugging Face Spaces (demo pública)
 
-1. Crear Space nuevo (Streamlit SDK)
-2. Pushear código
-3. URL pública con SSL
+No hay demo pública en Hugging Face: esta cuenta no es PRO. En el Hub actual `create_repo` solo acepta `gradio` | `docker` | `static`; Streamlit nativo ya no es un SDK de creación, y Gradio/Docker (incluido el template Streamlit) en `cpu-basic` responden **402**. Static no sirve para esta app.
+
+Entrypoint local para un Space si la cuenta pasa a PRO: `scripts/start_space.sh` (API + ingest de `data/sample` / `spark_docs` + Streamlit :7860). Variables previstas: `ENABLE_RERANK=false`, `GEMINI_MODEL=gemini-flash-lite-latest`, `VECTOR_STORE_BACKEND=chroma`. `GOOGLE_API_KEY` como *secret* del Space (no en el repo).
 
 ---
 
