@@ -28,6 +28,7 @@ MVP evaluado sobre documentación técnica con búsqueda híbrida, re-ranking op
 - **Langfuse no implementado**
 
 Para más detalles sobre arquitectura, evaluación, decisiones técnicas y deploy, ver:
+- [`docs/STUDY_PLAN.md`](docs/STUDY_PLAN.md) — plan de estudio desde cero (data engineer → RAG)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — decisiones técnicas y compromisos
 - [`docs/EVALUATION.md`](docs/EVALUATION.md) — cómo interpretar las métricas
 - [`docs/DEPLOY_DATABRICKS.md`](docs/DEPLOY_DATABRICKS.md) — setup Free Edition, gotchas y cleanup
@@ -266,6 +267,7 @@ rag-docs/
 │   └── …
 │
 └── docs/                          # Documentación (español; términos técnicos en inglés)
+    ├── STUDY_PLAN.md              # Plan de estudio DE → RAG
     ├── ARCHITECTURE.md            # Decisiones técnicas
     ├── EVALUATION.md              # Cómo interpretar métricas
     ├── DEPLOY_DATABRICKS.md       # Vector Search en Free Edition
@@ -337,6 +339,12 @@ Para reproducir: `python scripts.evaluate_light.py`
 Cómo leer las métricas: [`docs/EVALUATION.md`](docs/EVALUATION.md).
 
 ---
+
+## Plan de estudio (data engineer → AI)
+
+Si venís de data engineering y querés entender este repo **desde cero en
+AI**, el camino guiado (conceptos, analogías DE, archivos, ejercicios) está
+en [`docs/STUDY_PLAN.md`](docs/STUDY_PLAN.md).
 
 ## Recursos y referencias
 
